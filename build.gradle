@@ -1,0 +1,45 @@
+defaultTasks 'clean', 'build'
+
+apply plugin: 'java'
+apply plugin: 'checkstyle'
+//apply plugin: 'jacoco'
+
+description = 'Rocket-Config \u2013 configuration reading simplified'
+version = '0.2-Beta'
+
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+
+sourceSets.main.output.resourcesDir = sourceSets.main.output.classesDir
+sourceSets.test.output.resourcesDir = sourceSets.test.output.classesDir
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  compile 'org.slf4j:slf4j-api:1.7.5'
+  testCompile 'org.testng:testng:6.5.2'
+}
+
+test {
+  useTestNG()
+  debug false
+}
+
+jar {
+  manifest {
+    attributes 'Implementation-Title': description, 'Implementation-Version': version
+  }
+}
+
+javadoc {
+  options {
+    overview new File(sourceSets.main.java.srcDirs.toList()[0], 'overview.html').absolutePath
+    docTitle project.description + ' (version ' + project.version + ')'
+    windowTitle docTitle
+    encoding 'UTF-8'
+    author true
+    links 'http://docs.oracle.com/javase/6/docs/api/'
+  }
+}

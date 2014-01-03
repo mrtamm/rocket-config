@@ -1,0 +1,247 @@
+<body>
+
+  <style scoped="scoped">
+    .demo { border: 1px solid #33f; padding: 0.5em; }
+    TABLE { border: 1px solid #33f; border-collapse: collapse; }  
+    TH,TD { border: 1px solid #33f; padding: 0.5em; }  
+
+  </style>
+
+  <h1>Rocket-Config</h1>
+  <p><em>An advanced configuration reading solution</em></p>
+
+  <h2>Introduction</h2>
+
+  <p><em>Rocket-Config</em> introduces a strict configuration file format where configuration settings are divided into
+    sections. A section begins with its name (surrounded by square brackets) on a single line. The following lines are
+    treated as section settings data until next section name or end of file is reached.
+  </p>
+
+  <p>
+    Each <em>section</em> data block may have its own syntax format, however, a line in a section defines exactly one
+    setting value. There are two formats for sections:
+  </p>
+
+  <ol>
+    <li>a single value or a list of values per <code>java.util.List</code> item.</li>
+    <li>key-value pair of values (separated by equals sign) per <code>java.util.Map</code> entry</li>
+  </ol>
+
+  <p>A configuration file should therefore consist of one or more sections. There are two approaches to parsing a
+    configuration file:</p>
+
+  <ol>
+    <li><em>A single configuration object</em>: the data read is stored in the configuration bean (as soon as a section
+      is read).</li>
+    <li><em>A map of configuration objects</em>: all sections are the same type in terms of data and configuration bean;
+      section names are not predefined but they must not be empty; the result of parsing is a map where section names
+      are keys and corresponding values are instances of beans configured with the settings in the section.
+  </ol>
+
+  <p><strong>Whitespace treatment</strong> by stream reader:</p>
+
+  <ol>
+    <li>a configuration file may contain as many blank lines as needed since they are ignored;</li>
+    <li>whitespace at the beginning and at the end of a line with value are trimmed;</li>
+    <li>whitespace around equals-sign (map key-value) is trimmed;</li>
+    <li>whitespace around section name in square brackets is ignored;</li>
+    <li>note: there is no escape character so that a line could be continued on the next line; each actual line is
+      treated individually.</li>
+  </ol>
+
+  <p><strong>Comment</strong> symbol is <code>#</code> &ndash; everything after <code>#</code> till the end of line is
+    ignored by the stream reader.</p>
+
+  <p>All in all, <em>Rocket-Config</em> library provides the following:</p>
+
+  <ol>
+    <li>A configuration model for describing the expected configuration file;</li>
+    <li>Parsing the configuration file data right into a created instance of the predefined Java bean;</li>
+    <li>Elementary validation of the correctness of both configuration model and file;</li>
+    <li>Errors and warnings gathered from validation and parsing</li>
+  </ol>
+
+  <p>This should help application writers to simplify the process of custom configuration file format creation and
+    parsing, too. In addition, as the data is immediately stored in runtime bean, it's a better guarantee that the data
+    from a file will convert to target runtime type. Besides, the configuration bean can also be used programmatically,
+    too.</p>
+
+  <p>This library <em>does not deal</em> with following:</p>
+
+  <ol>
+    <li>configuration file lookup and location preferences &ndash; it's easier to let each application handle it;</li>
+    <li>configuration semantic correctness &ndash; the configuration object can implement checks in setter methods or
+      better provide a separate validation method to call after a configuration file has been parsed.</li>
+  </ol>
+
+  <h2>Usage Guide</h2>
+
+  <p>The <code>ws.rocket.config.ConfigModel</code> class takes care of the most that anyone mostly needs. It provides
+    a builder for setting up a model, methods for validating the model, and reading data from a configuration stream to
+    a runtime bean.</p>
+
+  <p>Here's an example:</p>
+
+  <pre class="demo">
+ConfigModel&lt;AcmeConfig&gt; model = ConfigModel.expect(AcmeConfig.class)
+    .section("general").ofMap().storeIn("name", "url", "timeout")
+    .section("entities").ofList(Class.class).storeIn("entities")
+    .section("filters").ofList(Filter.class).storeIn("filters")
+    .ready();
+
+AcmeConfig conf = model.parse(getClass().getResourceAsStream("/acme.conf"));
+conf.validate(); // Custom validation done by the configuration bean.
+</pre>
+
+  <p>
+    The previous example expects a configuration file with three sections: <code>[general]</code>,
+    <code>[entities]</code>, and <code>[filters]</code>. The sections in the file must have same order but may skip any
+    of them to use default settings of the section. This example also defines that section <code>[general]</code>
+    expects key-value pairs and stores the values of settings <code>name</code>, <code>url</code>, and
+    <code>timeout</code> in corresponding properties of <code>AcmeConfig</code> class. The target runtime type of these
+    properties will be determined by corresponding bean setter method argument types.
+  </p>
+
+  <p>The second section ("entities") is a list or array of class names to be converted into runtime classes (not
+    instances of these types) and to be stored in property "entities" of an <code>AcmeConfig</code> instance. Whether
+    <code>Class[]</code> or <code>java.util.List&lt;Class&gt;</code> will be stored in the instance, this depends on the
+    setter method parameter type.
+  </p>
+
+  <p>
+    The third and last section ("filters") is a also a list or array of class names to be converted into runtime
+    instances that must extend or implement the custom type <code>Filter</code>. The data will be stored in the property
+    of an <code>AcmeConfig</code> instance using either <code>public void setFilters(Filter[])</code> or
+    <code>public void setFilters(java.util.List&lt;Filter&gt;)</code> method.
+  </p>
+
+  <p>To complete the example, here is also a sample configuration file:</p>
+
+  <pre class="demo">
+ # This is a comment
+[general]
+name    = HelloWorld
+url     = https://www.example.org/
+timeout = 10000
+
+[entities]
+
+org.example.entity.User
+org.example.entity.UserGroup
+org.example.entity.Widget
+
+[filters ]
+# no filters
+</pre>
+
+  <p>
+    In the previous example, the <em>timeout</em> is an <code>int</code> property of <code>AcmeConfig</code>. There is
+    built-in support most common Java types, where <code>String</code> is the source format. An empty source defaults
+    to <code>null</code> value, no matter what the destination type is. The table below describes how the standard
+    implementation of <code>ws.rocket.config.section.value.ValueConverter</code> called
+    <code>ws.rocket.config.section.value.DefaultConverter</code> works.
+  </p>
+
+  <table style="border: 1px solid; border-collapse: collapse;">
+    <tr>
+      <th>Target type</th>
+      <th>Source interpretation</th>
+    </tr>
+    <tr>
+      <td><code>long<br>java.lang.Long</code></td>
+      <td><code>Long.valueOf(<em>source</em>)</code></td>
+    </tr>
+    <tr>
+      <td><code>int<br>java.lang.Integer</code></td>
+      <td><code>Integer.valueOf(<em>source</em>)</code></td>
+    </tr>
+    <tr>
+      <td><code>short<br>java.lang.Short</code></td>
+      <td><code>Short.valueOf(<em>source</em>)</code></td>
+    </tr>
+    <tr>
+      <td><code>double<br>java.lang.Double</code></td>
+      <td><code>Double.valueOf(<em>source</em>)</code></td>
+    </tr>
+    <tr>
+      <td><code>float<br>java.lang.Float</code></td>
+      <td><code>Float.valueOf(<em>source</em>)</code></td>
+    </tr>
+    <tr>
+      <td><code>char<br>java.lang.Character</code></td>
+      <td>First character of <em>source</em></td>
+    </tr>
+    <tr>
+      <td><code>byte<br>java.lang.Byte</code></td>
+      <td><code>Byte.valueOf(<em>source</em>)</code></td>
+    </tr>
+    <tr>
+      <td><code>boolean<br>java.lang.Boolean</code></td>
+      <td><code>Boolean.valueOf(<em>source</em>)</code></td>
+    </tr>
+    <tr>
+      <td><code>java.math.BigDecimal</code></td>
+      <td><code>new BigDecimal(<em>source</em>)</code></td>
+    </tr>
+    <tr>
+      <td><code>java.math.BigInteger</code></td>
+      <td><code>new BigInteger(<em>source</em>)</code></td>
+    </tr>
+    <tr>
+      <td><code>java.net.URI</code></td>
+      <td><code>URI.create(<em>source</em>)</code></td>
+    </tr>
+    <tr>
+      <td><code>java.net.URL</code></td>
+      <td><code>new URL(<em>source</em>)</code></td>
+    </tr>
+    <tr>
+      <td><code>java.lang.Class</code></td>
+      <td><code>Class.forName(<em>source</em>)</code></td>
+    </tr>
+    <tr>
+      <td><code>java.lang.Package</code></td>
+      <td><code>Package.getPackage(<em>source</em>)</code></td>
+    </tr>
+    <tr>
+      <td><code>java.util.Date</code></td>
+      <td>
+        Date value parsed using either of these formats:
+        <br><em>yyyy</em>-<em>mo</em>-<em>dd</em>T<em>h24</em>:<em>mi</em>:<em>ss</em>
+        <br><em>yyyy</em>-<em>mo</em>-<em>dd</em>
+        <br>T<em>h24</em>:<em>mi</em>:<em>ss</em>
+      </td>
+    </tr>
+    <tr>
+      <td><em>any other type</em></td>
+      <td>an instance returned by calling the default constructor of <code>Class.forName(<em>source</em>)</code></td>
+    </tr>
+  </table>
+
+  <h2>Extending</h2>
+
+  <p>This chapter gives a more detailed overview of how <em>Rocket-Config</em> works inside, its architecture, and how
+    to extend built-in support.</p>
+
+  <p>
+    The central class, <code>ConfigModel</code> defines the general approach to defining configuration models and then
+    parsing corresponding files. It cannot be extended, however, it is possible to customize section parsing, section
+    data (from the reader) writing to bean, and runtime value conversion from string.
+  </p>
+
+  <p>
+    The <code>ConfigModel</code> class keeps information about sections using the
+    <code>ws.rocket.config.section.Section</code> class. A <code>Section</code> has it's own name, reader, and writer
+    instance. The model builder usually provides methods for constructing the readers and writers just by calling
+    its methods. However, it also provides a method to define name, reader, and writer manually. Section readers and
+    writers just need to implement <code>ws.rocket.config.section.read.SectionReader</code> and
+    <code>ws.rocket.config.section.write.SectionWriter</code> contracts correspondingly.
+  </p>
+
+  <p>
+    Runtime value parsers need to implement <code>ws.rocket.config.section.value.ValueConverter</code> contract. An
+    instance of the custom converter must then be assigned to <code>ConfigModel</code> (in the <code>expect*()</code>
+    method) to be effective.
+  </p>
+
+</body>
