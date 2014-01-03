@@ -30,32 +30,36 @@ Sample configuration file:
 
 Sample configuration object:
 
-    public class AcmeConfig {
-      private String name;
-      private String url;
-      private int timeout = 20000;
-      private Class[] entities;
-      private Filter[] filters;
+```java
+public class AcmeConfig {
+  private String name;
+  private String url;
+  private int timeout = 20000;
+  private Class[] entities;
+  private Filter[] filters;
 
-      public void setName(String name) { this.name = name; }
-      public void setUrl(String url) { this.url = url; }
-      public void setTimeout(int timeout) { this.timeout = timeout; }
-      public void setEntities(Class[] entities) { this.entities = entities; }
-      public void setFilters(Filter[] filters) { this.filters = filters; }
-    }
+  public void setName(String name) { this.name = name; }
+  public void setUrl(String url) { this.url = url; }
+  public void setTimeout(int timeout) { this.timeout = timeout; }
+  public void setEntities(Class[] entities) { this.entities = entities; }
+  public void setFilters(Filter[] filters) { this.filters = filters; }
+}
+```
 
 Sample _Rocket-Config_ usage: describes configuration file model according to which the stream is parsed, and data will
 be stored in a new instance of target type.
 
-    ConfigModel<AcmeConfig> model = ConfigModel.expect(AcmeConfig.class)
-        .section("general").ofMap().storeIn("name", "url", "timeout")
-        .section("entities").ofList(Class.class).storeIn("entities")
-        .section("filters").ofList(Filter.class).storeIn("filters")
-        .ready();
-  
-    AcmeConfig conf = model.parse(getClass().getResourceAsStream("/acme.conf"));
+```java
+ConfigModel<AcmeConfig> model = ConfigModel.expect(AcmeConfig.class)
+    .section("general").ofMap().storeIn("name", "url", "timeout")
+    .section("entities").ofList(Class.class).storeIn("entities")
+    .section("filters").ofList(Filter.class).storeIn("filters")
+    .ready();
 
-As shown in the example, ``ConfigModel`` class provides the main functionality to use and usually that's enough.
+AcmeConfig conf = model.parse(getClass().getResourceAsStream("/acme.conf"));
+```
+
+As shown in the example, ``ws.rocket.config.ConfigModel`` class provides the main functionality to use and usually that's enough.
 
 ### Dependencies ###
 
