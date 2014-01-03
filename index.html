@@ -1,0 +1,134 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Rocket-config by mrtamm</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Rocket-config</h1>
+        <p>Configuration library for applications when java.util.Properties is not enough.</p>
+
+        <p class="view"><a href="https://github.com/mrtamm/rocket-config">View the Project on GitHub <small>mrtamm/rocket-config</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/mrtamm/rocket-config/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/mrtamm/rocket-config/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/mrtamm/rocket-config">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a name="rocket-config-library" class="anchor" href="#rocket-config-library"><span class="octicon octicon-link"></span></a>Rocket-Config Library</h1>
+
+<p><em>Configuration library for applications when <code>java.util.Properties</code> is not enough.</em></p>
+
+<h2>
+<a name="overview" class="anchor" href="#overview"><span class="octicon octicon-link"></span></a>Overview</h2>
+
+<p>This library fills the gap between a configuration file and runtime configuration values. It introduces section-based
+customizable configuration file formats. Once file parsing is completed, an application has a runtime configuration
+object that it can use to configure itself.</p>
+
+<p>Sample configuration file:</p>
+
+<pre><code>[general]
+# name-value pairs:
+name    = HelloWorld
+url     = https://www.example.org/
+timeout = 10000
+
+[entities]
+# 3 classes:
+org.example.entity.User
+org.example.entity.UserGroup
+org.example.entity.Widget
+
+[filters ]
+# 1 filter (an instance of this class):
+org.example.filter.AuditFilter
+</code></pre>
+
+<p>Sample configuration object:</p>
+
+<div class="highlight highlight-java"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">AcmeConfig</span> <span class="o">{</span>
+  <span class="kd">private</span> <span class="n">String</span> <span class="n">name</span><span class="o">;</span>
+  <span class="kd">private</span> <span class="n">String</span> <span class="n">url</span><span class="o">;</span>
+  <span class="kd">private</span> <span class="kt">int</span> <span class="n">timeout</span> <span class="o">=</span> <span class="mi">20000</span><span class="o">;</span>
+  <span class="kd">private</span> <span class="n">Class</span><span class="o">[]</span> <span class="n">entities</span><span class="o">;</span>
+  <span class="kd">private</span> <span class="n">Filter</span><span class="o">[]</span> <span class="n">filters</span><span class="o">;</span>
+
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setName</span><span class="o">(</span><span class="n">String</span> <span class="n">name</span><span class="o">)</span> <span class="o">{</span> <span class="k">this</span><span class="o">.</span><span class="na">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">;</span> <span class="o">}</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setUrl</span><span class="o">(</span><span class="n">String</span> <span class="n">url</span><span class="o">)</span> <span class="o">{</span> <span class="k">this</span><span class="o">.</span><span class="na">url</span> <span class="o">=</span> <span class="n">url</span><span class="o">;</span> <span class="o">}</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setTimeout</span><span class="o">(</span><span class="kt">int</span> <span class="n">timeout</span><span class="o">)</span> <span class="o">{</span> <span class="k">this</span><span class="o">.</span><span class="na">timeout</span> <span class="o">=</span> <span class="n">timeout</span><span class="o">;</span> <span class="o">}</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setEntities</span><span class="o">(</span><span class="n">Class</span><span class="o">[]</span> <span class="n">entities</span><span class="o">)</span> <span class="o">{</span> <span class="k">this</span><span class="o">.</span><span class="na">entities</span> <span class="o">=</span> <span class="n">entities</span><span class="o">;</span> <span class="o">}</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setFilters</span><span class="o">(</span><span class="n">Filter</span><span class="o">[]</span> <span class="n">filters</span><span class="o">)</span> <span class="o">{</span> <span class="k">this</span><span class="o">.</span><span class="na">filters</span> <span class="o">=</span> <span class="n">filters</span><span class="o">;</span> <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+<p>Sample <em>Rocket-Config</em> usage: describes configuration file model according to which the stream is parsed, and data will
+be stored in a new instance of target type.</p>
+
+<div class="highlight highlight-java"><pre><span class="n">ConfigModel</span><span class="o">&lt;</span><span class="n">AcmeConfig</span><span class="o">&gt;</span> <span class="n">model</span> <span class="o">=</span> <span class="n">ConfigModel</span><span class="o">.</span><span class="na">expect</span><span class="o">(</span><span class="n">AcmeConfig</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">section</span><span class="o">(</span><span class="s">"general"</span><span class="o">).</span><span class="na">ofMap</span><span class="o">().</span><span class="na">storeIn</span><span class="o">(</span><span class="s">"name"</span><span class="o">,</span> <span class="s">"url"</span><span class="o">,</span> <span class="s">"timeout"</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">section</span><span class="o">(</span><span class="s">"entities"</span><span class="o">).</span><span class="na">ofList</span><span class="o">(</span><span class="n">Class</span><span class="o">.</span><span class="na">class</span><span class="o">).</span><span class="na">storeIn</span><span class="o">(</span><span class="s">"entities"</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">section</span><span class="o">(</span><span class="s">"filters"</span><span class="o">).</span><span class="na">ofList</span><span class="o">(</span><span class="n">Filter</span><span class="o">.</span><span class="na">class</span><span class="o">).</span><span class="na">storeIn</span><span class="o">(</span><span class="s">"filters"</span><span class="o">)</span>
+    <span class="o">.</span><span class="na">ready</span><span class="o">();</span>
+
+<span class="n">AcmeConfig</span> <span class="n">conf</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="na">parse</span><span class="o">(</span><span class="n">getClass</span><span class="o">().</span><span class="na">getResourceAsStream</span><span class="o">(</span><span class="s">"/acme.conf"</span><span class="o">));</span>
+</pre></div>
+
+<p>As shown in the example, <code>ws.rocket.config.ConfigModel</code> class provides the main functionality to use and usually that's enough.</p>
+
+<h3>
+<a name="dependencies" class="anchor" href="#dependencies"><span class="octicon octicon-link"></span></a>Dependencies</h3>
+
+<p><em>Rocket-Config</em> only  requires <em>Java 1.6</em> or new runtime.</p>
+
+<h3>
+<a name="building" class="anchor" href="#building"><span class="octicon octicon-link"></span></a>Building</h3>
+
+<p>This project uses <a href="http://www.gradle.org/">Gradle</a> for</p>
+
+<ul>
+<li>downloading dependencies (automatically),</li>
+<li>executing unit tests (<code>gradle test</code>),</li>
+<li>building the project (<code>gradle jar</code>).</li>
+</ul><p>To view more available tasks, execute following command:</p>
+
+<pre><code>gradle tasks [--all]
+</code></pre>
+
+<p>Gradle uses .<code>/build/</code> directory for storing build process results:</p>
+
+<pre><code>./build/libs/           - composed JAR file directory
+./build/docs/javadoc/   - generated JavaDoc directory
+./build/reports/tests/  - generated report for executed tests
+</code></pre>
+
+<p>Gradle can be configured by editing <code>./build.gradle</code> file.</p>
+
+<h3>
+<a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h3>
+
+<p>This library is open-sourced with <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache 2.0 license</a> and is free to use.</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/mrtamm">mrtamm</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
