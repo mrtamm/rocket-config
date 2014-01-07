@@ -195,7 +195,7 @@ public final class BeanWriter<T> {
         }
       } catch (SectionValueException e) {
         this.msgs.addWarning("Tried to create an instance of class by calling " + constr
-            + " but failed to convert a value to target type: " + e);
+            + " but failed to convert a value to target type: " + e.getMessage());
       }
     }
 
@@ -205,7 +205,7 @@ public final class BeanWriter<T> {
             + " using parameters " + Arrays.toString(paramNames));
       } else {
         addError("Found " + constructors.size()
-            + " accessible constructors but still failed to create instance of " + type.getName()
+            + " accessible constructor(s) but still failed to create instance of " + type.getName()
             + " using parameters " + Arrays.toString(paramNames));
       }
     }
@@ -217,10 +217,8 @@ public final class BeanWriter<T> {
       throws SectionValueException {
 
     try {
-      if (constr.isAccessible()) {
-        Object[] params = resolveParams(constr.getParameterTypes(), paramNames, values);
-        return params != null ? constr.newInstance(params) : null;
-      }
+      Object[] params = resolveParams(constr.getParameterTypes(), paramNames, values);
+      return params != null ? constr.newInstance(params) : null;
     } catch (InstantiationException ex) {
       throw new SectionValueException(ex.toString());
     } catch (IllegalAccessException ex) {
@@ -230,7 +228,6 @@ public final class BeanWriter<T> {
     } catch (InvocationTargetException ex) {
       throw new SectionValueException(ex.toString());
     }
-    return null;
   }
 
   private Object[] resolveParams(Class[] paramTypes, String[] paramNames, Map<String, String> values)

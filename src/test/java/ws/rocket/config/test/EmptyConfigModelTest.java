@@ -17,22 +17,16 @@ import static org.testng.Assert.*;
  */
 public class EmptyConfigModelTest {
 
-  private final ConfigModel<Object> model = ConfigModel.expect(Object.class).ready();
-
   @Test
-  public void testModelNotNull() {
-    assertNotNull(this.model, "Model object");
-  }
+  public void testModel() {
+    ConfigModel<Object> model = ConfigModel.expect(Object.class).ready();
 
-  @Test
-  public void testModelBeanType() {
-    assertSame(this.model.getConfigBeanType(), Object.class, "Model bean type.");
-  }
+    assertNotNull(model, "Model object");
 
-  @Test
-  public void testModelSectionsEmpty() {
-    assertNotNull(this.model.getSections(), "Model sections array");
-    assertEquals(this.model.getSections().length, 0, "Model sections count");
+    assertSame(model.getConfigBeanType(), Object.class, "Model bean type.");
+
+    assertNotNull(model.getSections(), "Model sections array");
+    assertEquals(model.getSections().length, 0, "Model sections count");
   }
 
 }

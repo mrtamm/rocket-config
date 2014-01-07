@@ -32,7 +32,7 @@ import ws.rocket.config.bean.BeanWriter;
  */
 public final class BeanConstructorWriter implements SectionWriter {
 
-  private String propertyName;
+  private final String propertyName;
 
   private final String[] paramNames;
 
@@ -45,6 +45,7 @@ public final class BeanConstructorWriter implements SectionWriter {
    *                   The values for constructor parameters will be taken from the map by corresponding parameter name.
    */
   public BeanConstructorWriter(String propertyName, String... paramNames) {
+    this.propertyName = propertyName;
     this.paramNames = paramNames;
   }
 

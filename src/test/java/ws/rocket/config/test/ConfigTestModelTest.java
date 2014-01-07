@@ -27,10 +27,11 @@ import ws.rocket.config.test.data.handler.TestHandler;
  */
 public class ConfigTestModelTest {
  
-  @Test()
+  @Test
   public void testModelParse() {
     final ConfigModel<ConfigTestModel> model = ConfigModel.expect(ConfigTestModel.class)
         .section("main").ofMap().storeInBeanProps()
+        .section("read-only").ofMap().storeInBeanOf("readOnly", "code", "text", "enabled")
         .section("handlers").ofMap(TestHandler.class).storeIn("handlers")
         .section("filters").ofList(TestFilter.class).storeIn("interceptors")
         .section("filters-array").ofList(TestFilter.class).storeIn("interceptorsArray")
@@ -40,6 +41,7 @@ public class ConfigTestModelTest {
       ConfigTestModel config = model.parse(ConfigTestModel.class.getResourceAsStream("/config-test.conf"));
 
       validateGeneralSection(config);
+      validateReadOnlySection(config);
       validateHandlerSection(config);
       validateFilterSection(config);
       validateFilterArraySection(config);
@@ -59,12 +61,20 @@ public class ConfigTestModelTest {
     assertEquals(config.getDescription(), "This is a test");
     assertEquals(config.getClazz(), String.class);
     assertEquals(config.getAmount(), 123456789);
+    assertEquals(config.getPort(), 12345);
     assertEquals(config.getPopulation(), 7000000000L);
     assertEquals(config.getPrice(), 9.99f);
     assertEquals(config.getRatio(), 100000.123);
     assertEquals(config.isEnabled(), true);
     assertEquals(config.getIndex(), 127);
     assertEquals(config.getYes(), 'y');
+  }
+
+  private void validateReadOnlySection(ConfigTestModel config) {
+    assertNotNull(config.getReadOnly());
+    assertEquals(config.getReadOnly().getCode(), 404);
+    assertEquals(config.getReadOnly().getText(), "Page Not Found");
+    assertTrue(config.getReadOnly().isEnabled());
   }
 
   private void validateHandlerSection(ConfigTestModel config) {

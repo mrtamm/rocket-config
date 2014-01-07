@@ -23,6 +23,8 @@ public class ConfigTestModel {
 
   private int amount;
 
+  private short port;
+
   private long population;
 
   private float price;
@@ -65,6 +67,14 @@ public class ConfigTestModel {
 
   public void setAmount(int amount) {
     this.amount = amount;
+  }
+
+  public short getPort() {
+    return port;
+  }
+
+  public void setPort(short port) {
+    this.port = port;
   }
 
   public long getPopulation() {
