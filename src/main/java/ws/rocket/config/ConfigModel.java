@@ -362,6 +362,7 @@ public final class ConfigModel<T> {
        */
       @Override
       public ConfigModelBuilder<T> storeInBeanProps(String... propertyNames) {
+        validatePropName(propertyNames);
         return updateWriter(new MultiPropertyWriter(propertyNames));
       }
 
@@ -370,6 +371,7 @@ public final class ConfigModel<T> {
        */
       @Override
       public ConfigModelBuilder<T> storeInBeanOf(String propertyName, String... paramNames) {
+        validatePropName(propertyName);
         return updateWriter(new BeanConstructorWriter(propertyName, paramNames));
       }
 
@@ -378,9 +380,24 @@ public final class ConfigModel<T> {
        */
       @Override
       public ConfigModelBuilder<T> storeIn(String propertyName) {
+        validatePropName(propertyName);
         return updateWriter(new SimplePropertyWriter(propertyName));
       }
 
+      private void validatePropName(String... propNames) {
+        if (propNames == null) {
+          throw new RuntimeException("Got a null reference for an array of bean property names");
+        }
+        for (String propName : propNames) {
+          if (propName == null) {
+            throw new RuntimeException("Got a null reference instead of a bean property name");
+          } else if (propName.length() == 0) {
+            throw new IllegalArgumentException("Got an empty string for a property name");
+          } else if (propName.indexOf(' ') >= 0 || propName.indexOf('\t') >= 0 || propName.indexOf('\n') >= 0) {
+            throw new IllegalArgumentException("Property name contains whitespace.");
+          }
+        }
+      }
     }
 
     /**

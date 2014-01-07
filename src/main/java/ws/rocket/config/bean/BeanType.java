@@ -38,6 +38,9 @@ public final class BeanType<T> {
    * @param type The targeted bean type.
    */
   public BeanType(Class<T> type) {
+    if (type == null) {
+      throw new NullPointerException("Got null for bean type");
+    }
     this.type = type;
   }
 
@@ -177,6 +180,10 @@ public final class BeanType<T> {
   }
 
   private static String getSetterMethodName(String property) {
+    if (property == null) {
+      throw new NullPointerException("Got null reference instead of bean property name.");
+    }
+
     String methodName = property;
     if (!Character.isUpperCase(property.charAt(0))) {
       methodName = Character.toUpperCase(property.charAt(0)) + property.substring(1);
