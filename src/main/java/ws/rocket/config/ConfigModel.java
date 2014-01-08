@@ -194,13 +194,7 @@ public final class ConfigModel<T> {
 
     private final List<Section> sections = new ArrayList<Section>();
 
-    private final ReaderFactory readerFactory = new ReaderFactory();
-
-    private final WriterFactory writerFactory = new WriterFactory();
-
-    private String currentSection;
-
-    private SectionReader currentReader;
+    private final FactoryImpl<T> factory = new FactoryImpl<T>(this);
 
     /**
      * Creates a new instance of model builder for given configuration bean type.
@@ -230,7 +224,8 @@ public final class ConfigModel<T> {
      * @return This model builder.
      */
     public ConfigModelBuilder<T> section(String name, SectionReader reader, SectionWriter writer) {
-      Section section = new Section(name, reader, writer);
+      validateSectionName(name);
+      Section section = new Section(name.trim(), reader, writer);
       section.validate(this.beanFactory.getValidator());
       this.sections.add(section);
       return this;
@@ -242,37 +237,9 @@ public final class ConfigModel<T> {
      * @param sectionName Section name. Must not be empty and already used.
      * @return A factory instance for choosing a reader for this section.
      */
-    public ReaderFactory section(String sectionName) {
-      if (this.currentSection != null) {
-        throw new RuntimeException("Starting new configuration section [" + sectionName
-                + "] while previous section [" + this.currentSection + "] is not completed.");
-      }
-      this.currentSection = sectionName;
-      return this.readerFactory;
-    }
-
-    private WriterFactory updateReader(SectionReader reader) {
-      if (this.currentReader != null) {
-        throw new RuntimeException("Cannot update reader when it's already set (in section ["
-            + this.currentSection + "]).");
-      }
-      this.currentReader = reader;
-      return this.writerFactory;
-    }
-
-    private ConfigModelBuilder<T> updateWriter(SectionWriter writer) {
-      if (this.currentSection == null) {
-        throw new RuntimeException("Cannot update writer when section name is not set.");
-      } else if (this.currentReader == null) {
-        throw new RuntimeException("Cannot set writer when section reader is not set (in section ["
-                + this.currentSection + "]).");
-      }
-
-      section(this.currentSection, this.currentReader, writer);
-
-      this.currentSection = null;
-      this.currentReader = null;
-      return this;
+    public ReaderFactory<T> section(String sectionName) {
+      validateSectionName(sectionName);
+      return this.factory.section(sectionName);
     }
 
     /**
@@ -284,78 +251,65 @@ public final class ConfigModel<T> {
       return new ConfigModel<T>(this.beanFactory, this.sections.toArray(new Section[this.sections.size()]));
     }
 
-    /**
-     * Factory for defining common section readers. This factory is for convenience and is optional.
-     */
-    public final class ReaderFactory {
+    private void validateSectionName(String name) {
+      if (name == null) {
+        throw new NullPointerException("Got a null reference for a section name");
+      } else if (name.trim().length() == 0) {
+        throw new IllegalArgumentException("Section name is empty");
+      }
+    }
+
+    private final class FactoryImpl<T> implements ReaderFactory<T>, BeanWriter<T> {
+
+      private final ConfigModelBuilder<T> builder;
+
+      private String currentSection;
+
+      private SectionReader currentReader;
+
+      private FactoryImpl(ConfigModelBuilder<T> builder) {
+        this.builder = builder;
+      }
 
       /**
-       * Defines that section data is a <code>String</code> value per line to be collected into
-       * <code>java.util.List</code>.
-       * 
-       * @return A factory instance for defining section writer.
+       * {@inheritDoc}
        */
-      public ValueWriter ofList() {
+      @Override
+      public ValueWriter<T> ofList() {
         return updateReader(new ValueListSection());
       }
 
       /**
-       * Defines that section data is a value (of given type) per line to be collected into
-       * <code>java.util.List</code>.
-       * 
-       * @param type The target runtime type for list values.
-       * @return A factory instance for defining section writer.
+       * {@inheritDoc}
        */
-      public ValueWriter ofList(Class<?> type) {
+      @Override
+      public ValueWriter<T> ofList(Class<?> type) {
         return updateReader(new ValueListSection(type));
       }
 
       /**
-       * Defines that section data is a key-value pair (separated by equal-sign) per line to be collected into
-       * <code>java.util.Map</code>. Both key and value are expected to be <code>String</code>s.
-       * 
-       * @return A factory instance for defining section writer.
+       * {@inheritDoc}
        */
-      public BeanWriter ofMap() {
+      @Override
+      public BeanWriter<T> ofMap() {
         return updateReader(new ValueMapSection());
       }
 
       /**
-       * Defines that section data is a key-value pair (separated by equal-sign) per line to be collected into
-       * <code>java.util.Map</code>. The map key is expected to be <code>String</code>. The map value is expected to be
-       * of <code>valueType</code>.
-       * 
-       * @param valueType The target runtime type for map values.
-       * @return A factory instance for defining section writer.
+       * {@inheritDoc}
        */
-      public ValueWriter ofMap(Class<?> valueType) {
+      @Override
+      public ValueWriter<T> ofMap(Class<?> valueType) {
         return ofMap(String.class, valueType);
       }
 
       /**
-       * Defines that section data is a key-value pair (separated by equal-sign) per line to be collected into
-       * <code>java.util.Map</code>. The map key is expected to be of <code>keyType</code>. The map value is expected to
-       * be of <code>valueType</code>.
-       * 
-       * @param keyType The target runtime type for map keys.
-       * @param valueType The target runtime type for map values.
-       * @return A factory instance for defining section writer.
+       * {@inheritDoc}
        */
-      public ValueWriter ofMap(Class<?> keyType, Class<?> valueType) {
+      @Override
+      public ValueWriter<T> ofMap(Class<?> keyType, Class<?> valueType) {
         return updateReader(new ValueMapSection(keyType, valueType));
       }
-
-    }
-
-    /**
-     * Factory for defining common section writers (to configuration object). This factory is for convenience and is
-     * optional.
-     * <p>
-     * Some kind of sections can be stored in one property, some are more advanced. This class, therefore, implements
-     * both <code>ValueWriter</code> and  <code>BeanWriter</code>. Which contract becomes effective is handled by
-     * <code>ReaderFactory</code> methods.
-     */
-    private class WriterFactory implements BeanWriter {
 
       /**
        * {@inheritDoc}
@@ -384,6 +338,39 @@ public final class ConfigModel<T> {
         return updateWriter(new SimplePropertyWriter(propertyName));
       }
 
+      private ReaderFactory<T> section(String name) {
+        if (this.currentSection != null) {
+          throw new RuntimeException("Starting new configuration section [" + name
+                  + "] while previous section [" + this.currentSection + "] is not completed.");
+        }
+        this.currentSection = name;
+        return this;
+      }
+
+      private FactoryImpl<T> updateReader(SectionReader reader) {
+        if (this.currentReader != null) {
+          throw new RuntimeException("Cannot update reader when it's already set (in section ["
+              + this.currentReader + "]).");
+        }
+        this.currentReader = reader;
+        return this;
+      }
+
+      private ConfigModelBuilder<T> updateWriter(SectionWriter writer) {
+        if (this.currentSection == null) {
+          throw new RuntimeException("Cannot update writer when section name is not set.");
+        } else if (this.currentReader == null) {
+          throw new RuntimeException("Cannot set writer when section reader is not set (in section ["
+                  + currentSection + "]).");
+        }
+
+        this.builder.section(this.currentSection, this.currentReader, writer);
+
+        this.currentSection = null;
+        this.currentReader = null;
+        return this.builder;
+      }
+
       private void validatePropName(String... propNames) {
         if (propNames == null) {
           throw new RuntimeException("Got a null reference for an array of bean property names");
@@ -398,13 +385,70 @@ public final class ConfigModel<T> {
           }
         }
       }
+
+    }
+
+    /**
+     * Factory for defining common section readers. This factory is for convenience and is optional.
+     * 
+     * @param <T> The type of the configuration bean.
+     */
+    public interface ReaderFactory<T> {
+
+      /**
+       * Defines that section data is a <code>String</code> value per line to be collected into
+       * <code>java.util.List</code>.
+       * 
+       * @return A factory instance for defining section writer.
+       */
+      ValueWriter<T> ofList();
+
+      /**
+       * Defines that section data is a value (of given type) per line to be collected into
+       * <code>java.util.List</code>.
+       * 
+       * @param type The target runtime type for list values.
+       * @return A factory instance for defining section writer.
+       */
+      ValueWriter<T> ofList(Class<?> type);
+
+      /**
+       * Defines that section data is a key-value pair (separated by equal-sign) per line to be collected into
+       * <code>java.util.Map</code>. Both key and value are expected to be <code>String</code>s.
+       * 
+       * @return A factory instance for defining section writer.
+       */
+      BeanWriter<T> ofMap();
+
+      /**
+       * Defines that section data is a key-value pair (separated by equal-sign) per line to be collected into
+       * <code>java.util.Map</code>. The map key is expected to be <code>String</code>. The map value is expected to be
+       * of <code>valueType</code>.
+       * 
+       * @param valueType The target runtime type for map values.
+       * @return A factory instance for defining section writer.
+       */
+      ValueWriter<T> ofMap(Class<?> valueType);
+
+      /**
+       * Defines that section data is a key-value pair (separated by equal-sign) per line to be collected into
+       * <code>java.util.Map</code>. The map key is expected to be of <code>keyType</code>. The map value is expected to
+       * be of <code>valueType</code>.
+       * 
+       * @param keyType The target runtime type for map keys.
+       * @param valueType The target runtime type for map values.
+       * @return A factory instance for defining section writer.
+       */
+      ValueWriter<T> ofMap(Class<?> keyType, Class<?> valueType);
     }
 
     /**
      * Section writer factory contract to use when the section reader supports at least writing the gathered section
      * data to a configuration bean property.
+     * 
+     * @param <T> The type of the configuration bean.
      */
-    public interface ValueWriter {
+    public interface ValueWriter<T> {
 
       /**
        * The value (containing data from configuration section) will be written to given bean property. When the section
@@ -414,15 +458,17 @@ public final class ConfigModel<T> {
        * @param propertyName The property name of the main configuration object.
        * @return Current configuration builder.
       */
-      ConfigModelBuilder storeIn(String propertyName);
+      ConfigModelBuilder<T> storeIn(String propertyName);
     }
 
     /**
      * Section writer factory contract to use when the section reader passes on a <code>Map</code> collection. This
      * enables writing the gathered section data to multiple properties of a configuration bean, or the property type
      * can be an object type that takes in the section data as constructor arguments.
+     * 
+     * @param <T> The type of the configuration bean.
      */
-    public interface BeanWriter extends ValueWriter {
+    public interface BeanWriter<T> extends ValueWriter<T> {
 
       /**
        * The value as Map (containing data from configuration section) will be written to given bean properties. The
@@ -439,7 +485,7 @@ public final class ConfigModel<T> {
        * @param propertyNames The property names (also the map keys) of the bean to write to. May be an empty array.
        * @return Current configuration builder.
        */
-      ConfigModelBuilder storeInBeanProps(String... propertyNames);
+      ConfigModelBuilder<T> storeInBeanProps(String... propertyNames);
 
       /**
        * The value as Map (containing data from configuration section) will be written to given bean property, which is
@@ -462,7 +508,7 @@ public final class ConfigModel<T> {
        * setting the property of the main configuration object. May be an empty array.
        * @return Current configuration builder.
        */
-      ConfigModelBuilder storeInBeanOf(String propertyName, String... paramNames);
+      ConfigModelBuilder<T> storeInBeanOf(String propertyName, String... paramNames);
     }
 
   }
