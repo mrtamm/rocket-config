@@ -64,7 +64,7 @@ As shown in the example, ``ws.rocket.config.ConfigModel`` class provides the mai
 
 _Rocket-Config_ only  requires _Java 1.6_ (or newer) for compiling and running.
 
-Unit tests additionally rely on _TestNg_ library.
+Unit tests additionally rely on _TestNG_ library.
 
 ### Building ###
 
