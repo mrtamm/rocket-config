@@ -20,17 +20,25 @@ import java.io.ByteArrayInputStream;
 import org.testng.annotations.Test;
 import ws.rocket.config.ConfigModel;
 
-import static org.testng.Assert.*;
 import ws.rocket.config.ConfigException;
 import ws.rocket.config.Messages;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertSame;
 
 /**
  * Tests the minimum: a configuration with no sections, both model construction and parsing.
  * 
  * @author Martti Tamm
  */
-public class EmptyConfigModelTest {
+public final class EmptyConfigModelTest {
 
+  /**
+   * Creates a configuration model with no sections. Afterwards parses an empty stream and verifies that an instance
+   * of configuration bean is created.
+   */
   @Test
   public void testModel() {
     ConfigModel<Object> model = ConfigModel.expect(Object.class).ready();

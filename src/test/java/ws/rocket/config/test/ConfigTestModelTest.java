@@ -21,7 +21,6 @@ import ws.rocket.config.ConfigModel;
 import ws.rocket.config.Messages;
 import ws.rocket.config.test.data.ConfigTestModel;
 
-import static org.testng.Assert.*;
 import org.testng.annotations.Test;
 import ws.rocket.config.ConfigException;
 import ws.rocket.config.test.data.filter.Phase1Filter;
@@ -31,14 +30,22 @@ import ws.rocket.config.test.data.handler.Phase1Handler;
 import ws.rocket.config.test.data.handler.Phase2Handler;
 import ws.rocket.config.test.data.handler.TestHandler;
 
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
+
 /**
  * Tests all the features to verify that they work when model is correct and configuration file conforms. This test
  * relies on external configuration file <em>/config-test.conf</em>.
  * 
  * @author Martti Tamm
  */
-public class ConfigTestModelTest {
- 
+public final class ConfigTestModelTest {
+
+  /**
+   * Creates a model, parses configuration file (<em>/config-test.conf</em>), and validates the parsed data.
+   */
   @Test
   public void testModelParse() {
     final ConfigModel<ConfigTestModel> model = ConfigModel.expect(ConfigTestModel.class)

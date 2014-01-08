@@ -59,13 +59,13 @@ public final class BeanWriter<T> {
 
   private final T bean;
 
-  private final BeanType type;
+  private final BeanType<T> type;
 
   private final Messages msgs;
 
   private final ValueConverter converter;
 
-  private BeanWriter(T bean, BeanType beanType, ValueConverter valueConverter, Messages msgs) {
+  private BeanWriter(T bean, BeanType<T> beanType, ValueConverter valueConverter, Messages msgs) {
     this.bean = bean;
     this.type = beanType;
     this.converter = valueConverter;
@@ -185,9 +185,9 @@ public final class BeanWriter<T> {
    */
   public Object construct(Class<?> type, String[] paramNames, Map<String, String> values) {
     Object result = null;
-    List<Constructor> constructors = BeanType.getConstructors(type, paramNames.length);
+    List<Constructor<?>> constructors = BeanType.getConstructors(type, paramNames.length);
 
-    for (Constructor constr : constructors) {
+    for (Constructor<?> constr : constructors) {
       try {
         result = attempConstruct(constr, paramNames, values);
         if (result != null) {
@@ -213,7 +213,7 @@ public final class BeanWriter<T> {
     return result;
   }
 
-  private Object attempConstruct(Constructor constr, String[] paramNames, Map<String, String> values)
+  private Object attempConstruct(Constructor<?> constr, String[] paramNames, Map<String, String> values)
       throws SectionValueException {
 
     try {

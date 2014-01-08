@@ -16,6 +16,7 @@
 
 package ws.rocket.config.bean;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -74,7 +75,7 @@ public final class BeanValidator {
       StringBuilder msg = new StringBuilder(100);
       msg.append("Property '").append(property).append("' (").append(collectionType.getName());
 
-      if (arrayCompType != null) {
+      if (collectionType == List.class && arrayCompType != null) {
         msg.append(" or ").append(arrayCompType.getName()).append("[]");
       }
 

@@ -146,7 +146,7 @@ public final class BeanType<T> {
    * @param paramCount The required amount of parameters.
    * @return A list containing all found constructors.
    */
-  public List<Constructor> getConstructors(int paramCount) {
+  public List<Constructor<?>> getConstructors(int paramCount) {
     return getConstructors(this.type, paramCount);
   }
 
@@ -157,9 +157,9 @@ public final class BeanType<T> {
    * @param paramCount The required amount of parameters.
    * @return A list containing all found constructors.
    */
-  public static List<Constructor> getConstructors(Class<?> type, int paramCount) {
-    List<Constructor> result = new ArrayList<Constructor>(type.getConstructors().length);
-    for (Constructor constr : type.getConstructors()) {
+  public static List<Constructor<?>> getConstructors(Class<?> type, int paramCount) {
+    List<Constructor<?>> result = new ArrayList<Constructor<?>>(type.getConstructors().length);
+    for (Constructor<?> constr : type.getConstructors()) {
       if (constr.getParameterTypes().length == paramCount) {
         result.add(constr);
       }

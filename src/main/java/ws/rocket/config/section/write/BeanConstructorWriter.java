@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package ws.rocket.config.section.write;
 
 import java.util.Map;
@@ -56,6 +57,7 @@ public final class BeanConstructorWriter implements SectionWriter {
   }
 
   @Override
+  @SuppressWarnings({ "unchecked", "rawtypes" })
   public void write(BeanWriter<?> writer, Object values, Class<?> valueType) {
     valueType = new BeanType(writer.getBean().getClass()).getPropertyType(this.propertyName, this.paramNames.length);
     Object bean = writer.construct(valueType, this.paramNames, (Map<String, String>) values);

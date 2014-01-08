@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.Map;
 import ws.rocket.config.reader.ReaderContext;
 import ws.rocket.config.bean.BeanContext;
+import ws.rocket.config.bean.ModelException;
 import ws.rocket.config.section.Section;
 import ws.rocket.config.section.read.SectionReader;
 import ws.rocket.config.section.read.ValueListSection;
@@ -256,6 +257,15 @@ public final class ConfigModel<T> {
         throw new NullPointerException("Got a null reference for a section name");
       } else if (name.trim().length() == 0) {
         throw new IllegalArgumentException("Section name is empty");
+      } else if (name.indexOf('[') >= 0 || name.indexOf(']') >= 0) {
+        throw new IllegalArgumentException("Section name must not contain square brackets");
+      }
+
+      name = name.trim();
+      for (Section section : this.sections) {
+        if (section.getName().equals(name)) {
+          throw new ModelException("Section with name [" + name + "] is already defined.");
+        }
       }
     }
 
@@ -373,11 +383,11 @@ public final class ConfigModel<T> {
 
       private void validatePropName(String... propNames) {
         if (propNames == null) {
-          throw new RuntimeException("Got a null reference for an array of bean property names");
+          throw new NullPointerException("Got a null reference for an array of bean property names");
         }
         for (String propName : propNames) {
           if (propName == null) {
-            throw new RuntimeException("Got a null reference instead of a bean property name");
+            throw new NullPointerException("Got a null reference instead of a bean property name");
           } else if (propName.length() == 0) {
             throw new IllegalArgumentException("Got an empty string for a property name");
           } else if (propName.indexOf(' ') >= 0 || propName.indexOf('\t') >= 0 || propName.indexOf('\n') >= 0) {
