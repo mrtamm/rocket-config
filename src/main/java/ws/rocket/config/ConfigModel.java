@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.io.IOException;
-import java.util.Map;
 import ws.rocket.config.reader.ReaderContext;
 import ws.rocket.config.bean.BeanContext;
 import ws.rocket.config.bean.ModelException;
@@ -60,9 +59,9 @@ import ws.rocket.config.section.write.SimplePropertyWriter;
  * <li>enables configuration file parsing</li>
  * </ol>
  *
- * @author Martti Tamm
- * 
  * @param <T> The target type that will hold the read configuration.
+ * 
+ * @author Martti Tamm
  */
 public final class ConfigModel<T> {
 
@@ -87,21 +86,6 @@ public final class ConfigModel<T> {
    */
   public static <T> ConfigModelBuilder<T> expect(Class<T> confInstanceType, ValueConverter converter) {
     return new ConfigModelBuilder<T>(confInstanceType, converter);
-  }
-
-  /**
-   * The factory method for constructing a new map-based model for given configuration bean type. The returned
-   * configuration model allows unlimited amount of sections where section name is used as map key, and the section
-   * data is used to create a new instance of configuration bean (per section).
-   * 
-   * @param <T> The type of the configuration bean.
-   * @param confInstanceType The type of the configuration bean.
-   * @param propNames Optional array of allowed property names. When empty, all properties are attempted.
-   * @return The created configuration model.
-   */
-  public static <T> ConfigModel<Map> expectMapOf(Class<T> confInstanceType, String... propNames) {
-    return new ConfigModelBuilder<Map>(Map.class, new DefaultConverter()).section("*",
-        new ValueMapSection(String.class, confInstanceType), null).ready();
   }
 
   private final BeanContext<T> beanFactory;
