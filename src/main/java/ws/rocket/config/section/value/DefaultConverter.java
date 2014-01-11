@@ -141,6 +141,17 @@ public final class DefaultConverter implements ValueConverter {
       return new BigInteger(value);
     } else if (targetType == URI.class) {
       return URI.create(value);
+    } else if (targetType.isEnum()) {
+      Object result = null;
+      for (Object enumVal : targetType.getEnumConstants()) {
+        if (value.equals(enumVal.toString())) {
+          result = enumVal;
+        }
+      }
+      if (result == null) {
+        throw new SectionValueException("There is no enum constant for '" + value + "' in " + targetType);
+      }
+      return result;
     } else if (targetType == URL.class) {
       try {
         return new URL(value);
@@ -166,7 +177,7 @@ public final class DefaultConverter implements ValueConverter {
     }
 
     try {
-      Class type = Class.forName(value);
+      Class<?> type = Class.forName(value);
 
       if (targetType == Class.class) {
         return type;
