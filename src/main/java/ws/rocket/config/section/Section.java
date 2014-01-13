@@ -84,7 +84,7 @@ public final class Section {
    * @param validator  The bean validation helper to use for testing bean properties.
    */
   public void validate(BeanValidator validator) {
-    Class collectionType = this.reader.getCollectionType();
+    Class<?> collectionType = this.reader.getCollectionType();
     Class<?> valueType = this.reader.getValueType();
     this.writer.validate(collectionType, valueType, validator);
   }
@@ -95,7 +95,7 @@ public final class Section {
    * @param context The parsing context.
    * @throws IOException An exception from the underlying stream.
    */
-  public void parse(ReaderContext context) throws IOException {
+  public void parse(ReaderContext<?> context) throws IOException {
     StreamReader stream = context.getStreamReader();
     String line = null;
 
@@ -114,6 +114,7 @@ public final class Section {
     }
 
     this.writer.write(context.getBeanWriter(), this.reader.getResult(), this.reader.getValueType());
+    this.reader.reset();
 
     context.inSection(line);
   }

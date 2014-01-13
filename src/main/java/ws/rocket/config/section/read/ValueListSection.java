@@ -29,7 +29,7 @@ import ws.rocket.config.section.value.ValueConverter;
  */
 public final class ValueListSection implements SectionReader {
 
-  private final List<Object> rows = new ArrayList<Object>();
+  private List<Object> rows = new ArrayList<Object>();
 
   private final Class<?> valueType;
 
@@ -51,7 +51,7 @@ public final class ValueListSection implements SectionReader {
 
   @Override
   public void reset() {
-    this.rows.clear();
+    this.rows = new ArrayList<Object>();
   }
 
   @Override

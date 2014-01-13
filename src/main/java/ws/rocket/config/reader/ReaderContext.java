@@ -36,7 +36,7 @@ public final class ReaderContext<T> {
 
   private final StreamReader reader;
 
-  private final BeanWriter<T> beanHandler;
+  private final BeanWriter<T> beanWriter;
 
   private final Messages msgs;
 
@@ -46,17 +46,22 @@ public final class ReaderContext<T> {
    * Creates a new reader context.
    * 
    * @param beanFactory The target bean handler.
+   * @param emptyConstructor A Boolean indicating that the bean must support default constructor.
    * @param input The stream to parse (fails if null).
    * @throws ConfigException When there are problems with stream or configuration file syntax/data.
    */
-  public ReaderContext(BeanContext<T> beanFactory, InputStream input) throws ConfigException {
+  public ReaderContext(BeanContext<T> beanFactory, boolean emptyConstructor, InputStream input) throws ConfigException {
     this.msgs = new Messages();
 
     if (input == null) {
       this.msgs.addError("Configuration input stream is null");
     }
 
-    this.beanHandler = beanFactory.createWriter(this.msgs);
+    if (emptyConstructor) {
+      this.beanWriter = beanFactory.createWithBean(this.msgs);
+    } else {
+      this.beanWriter = beanFactory.createWriter(this.msgs);
+    }
 
     checkErrors();
 
@@ -186,7 +191,7 @@ public final class ReaderContext<T> {
    * @return A bean writer.
    */
   public BeanWriter<T> getBeanWriter() {
-    return this.beanHandler;
+    return this.beanWriter;
   }
 
   private String enrichMsg(String msg) {

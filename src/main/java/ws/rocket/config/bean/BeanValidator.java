@@ -40,6 +40,15 @@ public final class BeanValidator {
   }
 
   /**
+   * Provides the current bean type.
+   * 
+   * @return The bean type.
+   */
+  public BeanType<?> getBeanType() {
+    return this.type;
+  }
+
+  /**
    * Checks that the underlying type has a default constructor.
    */
   public void requireEmptyConstructor() {

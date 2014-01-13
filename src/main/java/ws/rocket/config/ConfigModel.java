@@ -128,7 +128,7 @@ public final class ConfigModel<T> {
    * @throws ConfigException Contains error and possibly also warning messages from parsing the stream.
    */
   public T parse(InputStream input) throws ConfigException {
-    ReaderContext<T> ctx = new ReaderContext<T>(this.beanFactory, input);
+    ReaderContext<T> ctx = new ReaderContext<T>(this.beanFactory, true, input);
 
     try {
       ctx.toNextSection();
@@ -194,6 +194,7 @@ public final class ConfigModel<T> {
         throw new NullPointerException("Given value converter is a null reference");
       }
       this.beanFactory = new BeanContext<T>(type, valueConverter);
+      this.beanFactory.getValidator().requireEmptyConstructor();
     }
 
     /**

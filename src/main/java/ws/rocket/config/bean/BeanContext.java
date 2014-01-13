@@ -44,8 +44,6 @@ public final class BeanContext<T> {
     this.beanType = new BeanType<T>(type);
     this.valueConverter = valueConverter;
     this.validator = new BeanValidator(this.beanType);
-
-    this.validator.requireEmptyConstructor();
   }
 
   /**
@@ -59,6 +57,17 @@ public final class BeanContext<T> {
 
   /**
    * Creates a new bean and its writer instances for writing values to that new bean.
+   * 
+   * @param messages A message container to use for logging errors and warnings.
+   * @return The created writer.
+   */
+  public BeanWriter<T> createWithBean(Messages messages) {
+    return BeanWriter.createWithBean(this.beanType, this.valueConverter, messages);
+  }
+
+  /**
+   * Creates a new bean writer without creating a bean instance yet. Useful, when a section writer has control over
+   * initializing the bean.
    * 
    * @param messages A message container to use for logging errors and warnings.
    * @return The created writer.

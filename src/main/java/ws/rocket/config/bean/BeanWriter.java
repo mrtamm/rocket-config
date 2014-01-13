@@ -46,18 +46,31 @@ public final class BeanWriter<T> {
    * @param msgs Messages container for logging errors.
    * @return The created bean writer or <code>null</code> when bean instance could not be created (check messages then).
    */
-  public static <T> BeanWriter<T> create(BeanType<T> beanType, ValueConverter valueConverter, Messages msgs) {
-    BeanWriter<T> handler = null;
+  public static <T> BeanWriter<T> createWithBean(BeanType<T> beanType, ValueConverter valueConverter, Messages msgs) {
+    BeanWriter<T> writer = null;
     Class<T> type = beanType.getBeanClass();
     try {
-      handler = new BeanWriter<T>(type.newInstance(), beanType, valueConverter, msgs);
+      writer = new BeanWriter<T>(type.newInstance(), beanType, valueConverter, msgs);
     } catch (Exception e) {
       msgs.addError("Could not create instance of " + type.getName() + " using default constructor: " + e);
     }
-    return handler;
+    return writer;
   }
 
-  private final T bean;
+  /**
+   * Creates a new instance of bean writer without creating the bean instance.
+   * 
+   * @param <T> The targeted configuration bean type.
+   * @param beanType Bean type information.
+   * @param valueConverter Converter for non-String property values.
+   * @param msgs Messages container for logging errors.
+   * @return The created bean writer or <code>null</code> when bean instance could not be created (check messages then).
+   */
+  public static <T> BeanWriter<T> create(BeanType<T> beanType, ValueConverter valueConverter, Messages msgs) {
+    return new BeanWriter<T>(null, beanType, valueConverter, msgs);
+  }
+
+  private T bean;
 
   private final BeanType<T> type;
 
@@ -167,6 +180,61 @@ public final class BeanWriter<T> {
         m.invoke(this.bean, value);
       } catch (Exception e) {
         addError("Could not call method " + m + ": " + e.getMessage());
+      }
+    }
+  }
+
+  /**
+   * Recreates the bean used by this writer and sets the specified values. The bean creation is done in following order:
+   * <ol>
+   * <li>Attempt to create the bean using its constructor that takes same amount of parameters as there are members in
+   * <code>paramNames</code> array (values will be converted when necessary); when <code>paramNames</code> array is not
+   * empty, this method exits, leaving the target bean to be the created bean.
+   * <li>When previous step fails and <code>paramNames</code> array is not empty, the default constructor is attempted
+   * to call. Upon failure, this method exits, leaving target bean null.
+   * <li>When the <code>paramNames</code> array is empty, all <code>values</code> map entries will be tried to assign to
+   * corresponding properties (map key = property name and map value = property value) of the bean.
+   * <li>When the <code>paramNames</code> array is not empty, all corresponding values in the <code>values</code> map
+   * (<code>paramNames</code> value = map key) entries will be tried to assign to corresponding properties
+   * (map key = property name and map value = property value) of the bean.
+   * </ol>
+   * 
+   * @param paramNames The constructor parameter names to resolve into values from the map.
+   * @param values A map containing (all or some) values for the constructor.
+   */
+  @SuppressWarnings("unchecked")
+  public void reconstruct(String[] paramNames, Map<String, String> values) {
+    boolean explicitProps = paramNames.length > 0;
+
+    this.bean = (T) construct(this.type.getBeanClass(), paramNames, values);
+    if (this.bean != null && explicitProps) {
+      return;
+    }
+
+    // Fallback to trying to set values via bean properties, instead of constructor.
+    // Bean creation will fall back to default constructor.
+    if (this.bean == null && explicitProps) {
+      this.bean = (T) construct(this.type.getBeanClass(), new String[0], values);
+
+      if (this.bean == null) {
+        return;
+      }
+
+      this.msgs.clear();
+    }
+
+    if (explicitProps) {
+      for (String property : paramNames) {
+        String value = values.get(property);
+        if (value != null) {
+          setProperty(property, value, null);
+        }
+      }
+    } else if (!values.isEmpty()) {
+      for (Map.Entry<String, String> entry : values.entrySet()) {
+        if (entry.getValue() != null) {
+          setProperty(entry.getKey(), entry.getValue(), null);
+        }
       }
     }
   }

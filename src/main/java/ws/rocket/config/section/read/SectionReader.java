@@ -27,7 +27,8 @@ import ws.rocket.config.section.value.ValueConverter;
 public interface SectionReader {
 
   /**
-   * Resets the inner state so that the reader could be reused.
+   * Resets the inner state so that the reader could be reused. The collection data object should be recreated, as it
+   * might alter the target configuration bean state.
    */
   void reset();
 

@@ -30,7 +30,7 @@ import ws.rocket.config.section.value.ValueConverter;
  */
 public final class ValueMapSection implements SectionReader {
 
-  private final Map<Object, Object> props = new HashMap<Object, Object>();
+  private Map<Object, Object> props = new HashMap<Object, Object>();
 
   private final Class<?> keyType;
 
@@ -56,7 +56,7 @@ public final class ValueMapSection implements SectionReader {
 
   @Override
   public void reset() {
-    this.props.clear();
+    this.props = new HashMap<Object, Object>();
   }
 
   @Override
@@ -99,7 +99,7 @@ public final class ValueMapSection implements SectionReader {
   }
 
   @Override
-  public Class getValueType() {
+  public Class<?> getValueType() {
     return this.keyType;
   }
 

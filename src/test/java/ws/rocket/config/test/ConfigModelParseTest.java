@@ -41,7 +41,7 @@ import static org.testng.Assert.assertTrue;
  * 
  * @author Martti Tamm
  */
-public final class ConfigTestModelTest {
+public final class ConfigModelParseTest {
 
   /**
    * Creates a model, parses configuration file (<em>/config-test.conf</em>), and validates the parsed data.

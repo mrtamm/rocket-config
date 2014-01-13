@@ -28,7 +28,7 @@ import ws.rocket.config.test.data.ConfigTestModel;
  *
  * @author Martti Tamm
  */
-public final class InvalidConfigModelTest {
+public final class ConfigModelInvalidTest {
 
   /**
    * When configuration bean type is null.

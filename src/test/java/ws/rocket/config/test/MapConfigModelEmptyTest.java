@@ -17,23 +17,24 @@
 package ws.rocket.config.test;
 
 import java.io.ByteArrayInputStream;
+import java.util.Map;
 import org.testng.annotations.Test;
-import ws.rocket.config.ConfigModel;
 
 import ws.rocket.config.ConfigException;
+import ws.rocket.config.MapConfigModel;
 import ws.rocket.config.Messages;
 
-import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertSame;
+import static org.testng.Assert.assertTrue;
 
 /**
  * Tests the minimum: a configuration with no sections, both model construction and parsing.
  * 
  * @author Martti Tamm
  */
-public final class EmptyConfigModelTest {
+public final class MapConfigModelEmptyTest {
 
   /**
    * Creates a configuration model with no sections. Afterwards parses an empty stream and verifies that an instance
@@ -41,26 +42,22 @@ public final class EmptyConfigModelTest {
    */
   @Test
   public void testModel() {
-    ConfigModel<Object> model = ConfigModel.expect(Object.class).ready();
+    MapConfigModel<Object> model = MapConfigModel.expect(Object.class);
     verifyModel(model);
     verifyParse(model);
   }
 
-  private void verifyModel(ConfigModel<Object> model) {
+  private void verifyModel(MapConfigModel<Object> model) {
     assertNotNull(model, "Model object");
-
     assertSame(model.getConfigBeanType(), Object.class, "Model bean type.");
-
-    assertNotNull(model.getSections(), "Model sections array");
-    assertEquals(model.getSections().length, 0, "Model sections count");
   }
 
-  private void verifyParse(ConfigModel<Object> model) {
+  private void verifyParse(MapConfigModel<Object> model) {
     try {
-      Object data = model.parse(new ByteArrayInputStream(new byte[0]));
+      Map<String, Object> data = model.parse(new ByteArrayInputStream(new byte[0]));
 
       assertNotNull(data, "Configuration object");
-      assertEquals(data.getClass(), Object.class, "Configuration object type");
+      assertTrue(data.isEmpty(), "Configuration object should be empty");
 
     } catch (ConfigException e) {
       Messages msgs = e.getMessages();
