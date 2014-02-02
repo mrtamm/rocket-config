@@ -4,7 +4,7 @@ apply plugin: 'java'
 apply plugin: 'checkstyle'
 
 description = 'Rocket-Config \u2013 configuration reading simplified'
-version = '0.1-Beta'
+version = '0.1'
 
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
