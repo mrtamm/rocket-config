@@ -1,46 +1,46 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
+
   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Rocket-config by mrtamm</title>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Rocket-config : Configuration library for applications when java.util.Properties is not enough." />
 
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Rocket-config</title>
   </head>
+
   <body>
-    <div class="wrapper">
-      <header>
-        <h1>Rocket-config</h1>
-        <p>Configuration library for applications when java.util.Properties is not enough.</p>
 
-        <p class="view"><a href="https://github.com/mrtamm/rocket-config">View the Project on GitHub <small>mrtamm/rocket-config</small></a></p>
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/mrtamm/rocket-config">View on GitHub</a>
 
+          <h1 id="project_title">Rocket-config</h1>
+          <h2 id="project_tagline">Configuration library for applications when java.util.Properties is not enough.</h2>
 
-        <ul>
-          <li><a href="https://github.com/mrtamm/rocket-config/zipball/master">Download <strong>ZIP File</strong></a></li>
-          <li><a href="https://github.com/mrtamm/rocket-config/tarball/master">Download <strong>TAR Ball</strong></a></li>
-          <li><a href="https://github.com/mrtamm/rocket-config">View On <strong>GitHub</strong></a></li>
-        </ul>
-      </header>
-      <section>
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/mrtamm/rocket-config/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/mrtamm/rocket-config/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
         <h1>
 <a name="rocket-config-library" class="anchor" href="#rocket-config-library"><span class="octicon octicon-link"></span></a>Rocket-Config Library</h1>
 
 <p><em>Configuration library for applications when <code>java.util.Properties</code> is not enough.</em></p>
 
-<h2>
-<a name="overview" class="anchor" href="#overview"><span class="octicon octicon-link"></span></a>Overview</h2>
-
 <p>This library fills the gap between a configuration file and runtime configuration values. It introduces section-based
-customizable configuration file formats. Once file parsing is completed, an application has a runtime configuration
+customizable configuration file format. Once file parsing is completed, an application has a runtime configuration
 object that it can use to configure itself.</p>
 
-<p>Sample configuration file:</p>
+<p>Sample configuration file with three sections, each having its own custom data:</p>
 
 <pre><code>[general]
 # name-value pairs:
@@ -59,7 +59,7 @@ org.example.entity.Widget
 org.example.filter.AuditFilter
 </code></pre>
 
-<p>Sample configuration object:</p>
+<p>Sample configuration object for storing the parsed data:</p>
 
 <div class="highlight highlight-java"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">AcmeConfig</span> <span class="o">{</span>
   <span class="kd">private</span> <span class="n">String</span> <span class="n">name</span><span class="o">;</span>
@@ -76,8 +76,8 @@ org.example.filter.AuditFilter
 <span class="o">}</span>
 </pre></div>
 
-<p>Sample <em>Rocket-Config</em> usage: describes configuration file model according to which the stream is parsed, and data will
-be stored in a new instance of target type.</p>
+<p>Sample <em>Rocket-Config</em> usage: describe configuration file model (according to which the stream is parsed), and data will
+be stored in a new instance of the target type.</p>
 
 <div class="highlight highlight-java"><pre><span class="n">ConfigModel</span><span class="o">&lt;</span><span class="n">AcmeConfig</span><span class="o">&gt;</span> <span class="n">model</span> <span class="o">=</span> <span class="n">ConfigModel</span><span class="o">.</span><span class="na">expect</span><span class="o">(</span><span class="n">AcmeConfig</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
     <span class="o">.</span><span class="na">section</span><span class="o">(</span><span class="s">"general"</span><span class="o">).</span><span class="na">ofMap</span><span class="o">().</span><span class="na">storeIn</span><span class="o">(</span><span class="s">"name"</span><span class="o">,</span> <span class="s">"url"</span><span class="o">,</span> <span class="s">"timeout"</span><span class="o">)</span>
@@ -88,12 +88,14 @@ be stored in a new instance of target type.</p>
 <span class="n">AcmeConfig</span> <span class="n">conf</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="na">parse</span><span class="o">(</span><span class="n">getClass</span><span class="o">().</span><span class="na">getResourceAsStream</span><span class="o">(</span><span class="s">"/acme.conf"</span><span class="o">));</span>
 </pre></div>
 
-<p>As shown in the example, <code>ws.rocket.config.ConfigModel</code> class provides the main functionality to use and usually that's enough.</p>
+<p>As shown in the example, <code>ws.rocket.config.ConfigModel</code> class provides the main functionality for library users.</p>
 
 <h3>
 <a name="dependencies" class="anchor" href="#dependencies"><span class="octicon octicon-link"></span></a>Dependencies</h3>
 
-<p><em>Rocket-Config</em> only  requires <em>Java 1.6</em> or new runtime.</p>
+<p><em>Rocket-Config</em> only  requires <em>Java 1.6</em> (or newer) for compiling and running.</p>
+
+<p>Unit tests additionally rely on <em>TestNG</em> library.</p>
 
 <h3>
 <a name="building" class="anchor" href="#building"><span class="octicon octicon-link"></span></a>Building</h3>
@@ -101,34 +103,42 @@ be stored in a new instance of target type.</p>
 <p>This project uses <a href="http://www.gradle.org/">Gradle</a> for</p>
 
 <ul>
-<li>downloading dependencies (automatically),</li>
 <li>executing unit tests (<code>gradle test</code>),</li>
-<li>building the project (<code>gradle jar</code>).</li>
+<li>compiling the documentation (<code>gradle javadoc</code>).</li>
+<li>building the project (<code>gradle build</code>).</li>
 </ul><p>To view more available tasks, execute following command:</p>
 
 <pre><code>gradle tasks [--all]
 </code></pre>
 
-<p>Gradle uses .<code>/build/</code> directory for storing build process results:</p>
+<p><em>Gradle</em> uses <code>./build/</code> directory for storing build process results:</p>
 
-<pre><code>./build/libs/           - composed JAR file directory
+<pre><code>./build/libs/           - contains the created jar file
 ./build/docs/javadoc/   - generated JavaDoc directory
 ./build/reports/tests/  - generated report for executed tests
 </code></pre>
 
-<p>Gradle can be configured by editing <code>./build.gradle</code> file.</p>
+<p><em>Gradle</em> can be configured by editing <code>./build.gradle</code> file.</p>
 
 <h3>
 <a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h3>
 
-<p>This library is open-sourced with <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache 2.0 license</a> and is free to use.</p>
+<p>This library is open-sourced with <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache 2.0 license</a> and is free to use,
+to customize or to extend.</p>
+
+<p>Please use <a href="https://github.com/mrtamm/rocket-config/issues">issue tracker</a> to report problems and feature requests.</p>
       </section>
-      <footer>
-        <p>This project is maintained by <a href="https://github.com/mrtamm">mrtamm</a></p>
-        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Rocket-config maintained by <a href="https://github.com/mrtamm">mrtamm</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
       </footer>
     </div>
-    <script src="javascripts/scale.fix.js"></script>
+
     
+
   </body>
 </html>
