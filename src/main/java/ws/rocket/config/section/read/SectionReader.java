@@ -35,7 +35,7 @@ public interface SectionReader {
   /**
    * Reads a new line of section data.
    * 
-   * @param line A non-blank section data line.
+   * @param line A section data line (with comments removed).
    * @param converter A value converter to convert data to target type.
    * @throws SectionValueException When the line data is not some how correct for this reader.
    */

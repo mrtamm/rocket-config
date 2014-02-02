@@ -35,6 +35,8 @@ import java.io.InputStream;
  */
 public final class StreamReader {
 
+  private final StringBuilder buffer = new StringBuilder();
+
   private final InputStream input;
 
   private int line;
@@ -61,7 +63,34 @@ public final class StreamReader {
    * @throws IOException When the underlying stream reports problems.
    */
   public String readLine() throws IOException {
-    return this.endOfStream ? null : readNonEmptyLine();
+    if (this.endOfStream) {
+      return null;
+    }
+
+    this.line++;
+    boolean comment = false;
+    int nextChar = this.input.read();
+
+    // Repeat reading a line until the end of line or end of file.
+    // Comments will be skipped.
+    while (nextChar != '\n' && nextChar != -1) {
+      if (nextChar == '#') {
+        comment = true;
+      } else if (nextChar == -1) {
+        this.input.close();
+        break;
+      } else if (!comment && nextChar != '\r') {
+        this.buffer.appendCodePoint(nextChar);
+      }
+
+      nextChar = this.input.read();
+    }
+
+    this.endOfStream = nextChar == -1;
+
+    String result = this.endOfStream && this.buffer.length() == 0 ? null : this.buffer.toString();
+    this.buffer.setLength(0);
+    return result;
   }
 
   /**
@@ -82,44 +111,6 @@ public final class StreamReader {
    */
   public boolean isEndOfStream() {
     return this.endOfStream;
-  }
-
-  private String readNonEmptyLine() throws IOException {
-    StringBuilder buffer = new StringBuilder();
-
-    // Repeat until a line is read or stream end is reached.
-    do {
-      this.line++;
-      int nextChar = this.input.read();
-      boolean comment = false;
-
-      // Repeat reading a line until the end of line or end of file.
-      // Preceding whitespace and comments are not read.
-      while (nextChar != '\n' && nextChar != -1) {
-        if (nextChar == '#') {
-          comment = true;
-        } else if (nextChar == -1) {
-          this.input.close();
-          break;
-        } else if (!comment && !(Character.isWhitespace(nextChar) && buffer.length() == 0)) {
-          buffer.appendCodePoint(nextChar);
-        }
-
-        nextChar = this.input.read();
-      }
-
-      this.endOfStream = nextChar == -1;
-
-    } while (!this.endOfStream && buffer.length() == 0);
-
-    return buffer.length() > 0 ? bufferToString(buffer) : null;
-  }
-
-  private static String bufferToString(StringBuilder buffer) {
-    for (int i = buffer.length() - 1; i >= 0 && Character.isWhitespace(buffer.codePointAt(i)); i--) {
-      buffer.deleteCharAt(i);
-    }
-    return buffer.toString();
   }
 
 }

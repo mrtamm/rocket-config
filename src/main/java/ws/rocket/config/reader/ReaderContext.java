@@ -78,8 +78,8 @@ public final class ReaderContext<T> {
   public ReaderContext<T> toNextSection() throws IOException {
     String name;
     do {
-      name =  this.reader.readLine();
-    } while (name != null && (name.charAt(0) != '[' || name.charAt(name.length() - 1) != ']'));
+      name = this.reader.readLine();
+    } while (name != null && (name.indexOf('[') < 0 || name.indexOf(']') < 0));
     return inSection(name);
   }
 
@@ -104,10 +104,15 @@ public final class ReaderContext<T> {
   public ReaderContext<T> inSection(String name) {
     if (name == null) {
       this.sectionName = null;
-    } else if (name.charAt(0) != '[' || name.charAt(name.length() - 1) != ']') {
-      error("Bad section name format: " + name);
     } else {
-      this.sectionName = name.substring(1, name.length() - 1).trim();
+      int startPos = name.indexOf('[');
+      int endPos = name.indexOf(']');
+
+      if (startPos < 0 || endPos <= startPos) {
+        error("Bad section name format: " + name);
+      } else {
+        this.sectionName = name.substring(startPos + 1, endPos).trim();
+      }
     }
     return this;
   }

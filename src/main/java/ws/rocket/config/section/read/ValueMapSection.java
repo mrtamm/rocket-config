@@ -28,7 +28,7 @@ import ws.rocket.config.section.value.ValueConverter;
  *
  * @author Martti Tamm
  */
-public final class ValueMapSection implements SectionReader {
+public final class ValueMapSection extends NonBlankLineReader {
 
   private Map<Object, Object> props = new HashMap<Object, Object>();
 
@@ -60,7 +60,7 @@ public final class ValueMapSection implements SectionReader {
   }
 
   @Override
-  public void readLine(String line, ValueConverter converter) throws SectionValueException {
+  protected void readNonBlankLine(String line, ValueConverter converter) throws SectionValueException {
     int splitAt = line.indexOf('=');
     boolean valid = false;
 

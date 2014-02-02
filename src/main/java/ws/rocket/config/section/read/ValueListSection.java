@@ -27,7 +27,7 @@ import ws.rocket.config.section.value.ValueConverter;
  * 
  * @author Martti Tamm
  */
-public final class ValueListSection implements SectionReader {
+public final class ValueListSection extends NonBlankLineReader {
 
   private List<Object> rows = new ArrayList<Object>();
 
@@ -55,7 +55,7 @@ public final class ValueListSection implements SectionReader {
   }
 
   @Override
-  public void readLine(String line, ValueConverter converter) throws SectionValueException {
+  protected void readNonBlankLine(String line, ValueConverter converter) throws SectionValueException {
     Object value = converter.convert(line, this.valueType);
     if (!this.rows.contains(value)) {
       this.rows.add(value);

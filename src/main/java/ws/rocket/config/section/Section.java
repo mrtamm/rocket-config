@@ -102,7 +102,7 @@ public final class Section {
     while (!stream.isEndOfStream()) {
       line = stream.readLine();
 
-      if (line == null || line.charAt(0) == '[') {
+      if (line == null || line.indexOf('[') >= 0) {
         break;
       }
 
