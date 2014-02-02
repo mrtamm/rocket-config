@@ -60,6 +60,9 @@ AcmeConfig conf = model.parse(getClass().getResourceAsStream("/acme.conf"));
 
 As shown in the example, ``ws.rocket.config.ConfigModel`` class provides the main functionality for library users.
 
+For more examples and thorough overview, please refer to _Rocket-Config_
+[JavaDoc documentation](http://rocket.ws/rocket-config/javadoc/0.1/).
+
 ### Dependencies ###
 
 _Rocket-Config_ only  requires _Java 1.6_ (or newer) for compiling and running.
