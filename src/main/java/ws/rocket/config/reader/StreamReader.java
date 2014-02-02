@@ -20,11 +20,10 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * The stream reader takes care of reading input line-by-line, skipping all blank lines and comments.
+ * The stream reader takes care of reading input line-by-line.
  * <p>
- * White-space rules: blank lines, white-space before or after symbols on a line are ignored.
- * <p>
- * Comments: everything on a line that starts with symbol # is ignored until the end of line.
+ * Comments: everything on a line that starts with symbol # is ignored until the end of line. The symbol can be escaped
+ * with backward-slash (e.g.: \#)
  * <p>
  * Stream closing: although this class does its best effort to close the used stream, users of this class must also try
  * to close the stream, too.
