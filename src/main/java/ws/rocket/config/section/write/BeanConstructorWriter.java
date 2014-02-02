@@ -20,6 +20,7 @@ import java.util.Map;
 import ws.rocket.config.bean.BeanType;
 import ws.rocket.config.bean.BeanValidator;
 import ws.rocket.config.bean.BeanWriter;
+import ws.rocket.config.reader.StreamWriter;
 
 /**
  * An advanced section data writer that determines the property type, and creates an instance of it by calling the
@@ -40,10 +41,11 @@ public final class BeanConstructorWriter implements SectionWriter {
   /**
    * Creates a new multi-property writer. When property names are not defined, all the properties are attempted to write
    * to for which there exists a map key with non-null value.
-   * 
+   *
    * @param propertyName The property name of configuration bean (required).
-   * @param paramNames Array of parameter names of target property type. Their count determines the constructor to call.
-   *                   The values for constructor parameters will be taken from the map by corresponding parameter name.
+   * @param paramNames   Array of parameter names of target property type. Their count determines the constructor to
+   *                     call. The values for constructor parameters will be taken from the map by corresponding
+   *                     parameter name.
    */
   public BeanConstructorWriter(String propertyName, String... paramNames) {
     this.propertyName = propertyName;
@@ -65,6 +67,11 @@ public final class BeanConstructorWriter implements SectionWriter {
     if (bean != null) {
       writer.setProperty(this.propertyName, bean, null);
     }
+  }
+
+  @Override
+  public void describeTo(StreamWriter out, Class<?> collectionType, Class<?> valueType) {
+    out.nameValues(this.paramNames);
   }
 
 }

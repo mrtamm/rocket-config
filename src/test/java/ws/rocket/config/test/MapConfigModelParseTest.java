@@ -13,20 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package ws.rocket.config.test;
-
-import java.util.Map;
-import java.util.Set;
-import ws.rocket.config.Messages;
-import ws.rocket.config.test.data.ConfigTestModel;
-
-import org.testng.annotations.Test;
-import ws.rocket.config.ConfigException;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
+
+import java.util.Map;
+import java.util.Set;
+import org.testng.annotations.Test;
+import ws.rocket.config.ConfigException;
 import ws.rocket.config.MapConfigModel;
+import ws.rocket.config.Messages;
+import ws.rocket.config.test.data.ConfigTestModel;
 import ws.rocket.config.test.data.ReadOnlyModel;
 
 /**
@@ -43,11 +43,13 @@ public final class MapConfigModelParseTest {
   @Test
   public void testModelConstructorParse() {
     final MapConfigModel<ReadOnlyModel> model = MapConfigModel
-        .expect(ReadOnlyModel.class, "code", "text", "enabled");
+            .expect(ReadOnlyModel.class, "code", "text", "enabled");
+
+    verifyToString(model);
 
     try {
       Map<String, ReadOnlyModel> config = model.parse(
-          ConfigTestModel.class.getResourceAsStream("/map-constructor-test.conf"));
+              ConfigTestModel.class.getResourceAsStream("/map-constructor-test.conf"));
 
       assertNotNull(model, "Parsed map (model) must never be null");
       assertEquals(config.size(), 3, "Expecting 3 items in map");
@@ -73,9 +75,11 @@ public final class MapConfigModelParseTest {
   public void testModelSetterParse() {
     final MapConfigModel<ConfigTestModel> model = MapConfigModel.expect(ConfigTestModel.class);
 
+    verifyToString(model);
+
     try {
       Map<String, ConfigTestModel> config = model.parse(
-          ConfigTestModel.class.getResourceAsStream("/map-setter-test.conf"));
+              ConfigTestModel.class.getResourceAsStream("/map-setter-test.conf"));
 
       assertNotNull(model, "Parsed map (model) must never be null");
       assertEquals(config.size(), 3, "Expecting 3 items in map");
@@ -94,6 +98,10 @@ public final class MapConfigModelParseTest {
     }
   }
 
+  private void verifyToString(MapConfigModel<?> model) {
+    System.out.println(model.toString());
+  }
+
   private void validateSection(ReadOnlyModel config, int code, String text, boolean enabled) {
     assertEquals(config.getCode(), code);
     assertEquals(config.getText(), text);
@@ -105,4 +113,5 @@ public final class MapConfigModelParseTest {
     assertEquals(config.getIndex(), index);
     assertEquals(config.getPopulation(), population);
   }
+
 }

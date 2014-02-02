@@ -16,12 +16,14 @@
 
 package ws.rocket.config.section.write;
 
+import java.util.Map;
 import ws.rocket.config.bean.BeanValidator;
 import ws.rocket.config.bean.BeanWriter;
+import ws.rocket.config.reader.StreamWriter;
 
 /**
  * A section data writer that will store the received collection in a property of the target bean.
- * 
+ *
  * @author Martti Tamm
  */
 public final class SimplePropertyWriter implements SectionWriter {
@@ -30,7 +32,7 @@ public final class SimplePropertyWriter implements SectionWriter {
 
   /**
    * Creates a new simple writer instance.
-   * 
+   *
    * @param propertyName The property name of the target bean.
    */
   public SimplePropertyWriter(String propertyName) {
@@ -45,6 +47,15 @@ public final class SimplePropertyWriter implements SectionWriter {
   @Override
   public void write(BeanWriter<?> writer, Object values, Class<?> valueType) {
     writer.setProperty(this.propertyName, values, valueType);
+  }
+
+  @Override
+  public void describeTo(StreamWriter out, Class<?> collectionType, Class<?> valueType) {
+    if (collectionType == Map.class) {
+      out.nameValues(null);
+    } else {
+      out.values(valueType);
+    }
   }
 
 }

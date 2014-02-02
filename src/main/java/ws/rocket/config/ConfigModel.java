@@ -16,14 +16,17 @@
 
 package ws.rocket.config;
 
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.io.IOException;
+import java.io.PrintStream;
 import ws.rocket.config.reader.ReaderContext;
 import ws.rocket.config.bean.BeanContext;
 import ws.rocket.config.bean.ModelException;
+import ws.rocket.config.reader.StreamWriter;
 import ws.rocket.config.section.Section;
 import ws.rocket.config.section.read.SectionReader;
 import ws.rocket.config.section.read.ValueListSection;
@@ -36,8 +39,8 @@ import ws.rocket.config.section.write.SectionWriter;
 import ws.rocket.config.section.write.SimplePropertyWriter;
 
 /**
- * Configuration model holds the description of what structure a configuration file may have, how to parse it, and
- * where to write the configuration settings/values (in a bean object).
+ * Configuration model holds the description of what structure a configuration file may have, how to parse it, and where
+ * to write the configuration settings/values (in a bean object).
  * <p>
  * The configuration files consist of sections with name (in square brackets) and configuration lines per section. A
  * <code>SectionReader</code> attempts to interpret each non-blank line in corresponding section, tries to convert it
@@ -60,15 +63,15 @@ import ws.rocket.config.section.write.SimplePropertyWriter;
  * </ol>
  *
  * @param <T> The target type that will hold the read configuration.
- * 
+ *
  * @author Martti Tamm
  */
 public final class ConfigModel<T> {
 
   /**
    * The factory method for constructing a new model for given configuration bean type.
-   * 
-   * @param <T> The type of the configuration bean.
+   *
+   * @param <T>              The type of the configuration bean.
    * @param confInstanceType The type of the configuration bean.
    * @return The builder to continue with describing the sections.
    */
@@ -78,10 +81,10 @@ public final class ConfigModel<T> {
 
   /**
    * The factory method for constructing a new model for given configuration bean type.
-   * 
-   * @param <T> The type of the configuration bean.
+   *
+   * @param <T>              The type of the configuration bean.
    * @param confInstanceType The type of the configuration bean.
-   * @param converter A custom value converter to use for <code>String</code> to runtime type value conversions.
+   * @param converter        A custom value converter to use for <code>String</code> to runtime type value conversions.
    * @return The builder to continue with describing the sections.
    */
   public static <T> ConfigModelBuilder<T> expect(Class<T> confInstanceType, ValueConverter converter) {
@@ -99,7 +102,7 @@ public final class ConfigModel<T> {
 
   /**
    * Informative method: provides access to the configuration sections of this model.
-   * 
+   *
    * @return An array of configuration sections.
    */
   public Section[] getSections() {
@@ -108,7 +111,7 @@ public final class ConfigModel<T> {
 
   /**
    * Informative method: provides the bean type that will be returned after conversion.
-   * 
+   *
    * @return Configuration bean type.
    */
   public Class<T> getConfigBeanType() {
@@ -122,7 +125,7 @@ public final class ConfigModel<T> {
    * <p>
    * The sections in the configuration stream must be ordered the same way as in this model, however, sections in the
    * stream may omit some of those in the model. Duplicate sections or bad section names will raise ConfigException.
-   * 
+   *
    * @param input Configuration stream. When null then ConfigException will be raised.
    * @return A new instance of configuration object with data set as defined in the stream.
    * @throws ConfigException Contains error and possibly also warning messages from parsing the stream.
@@ -168,9 +171,41 @@ public final class ConfigModel<T> {
   }
 
   /**
+   * Provides textual representation of the current model setup and writes it to the provided stream.
+   * <p>
+   * Applications might use this to enlist what settings are available and how a configuration file should look like.
+   * The output of this method should not be considered as valid setup, nor is it guaranteed to be always syntactically
+   * correct.
+   *
+   * @param out The stream where to write.
+   * @see #toString()
+   */
+  public void describeTo(PrintStream out) {
+    StreamWriter writer = StreamWriter.init(out, this.getConfigBeanType());
+    for (Section section : this.sections) {
+      section.describeTo(writer);
+    }
+  }
+
+  /**
+   * Provides textual representation of the current model setup and returns it as string.
+   * <p>
+   * {@inheritDoc}
+   *
+   * @return Textual representation of model setup.
+   * @see #describeTo(java.io.PrintStream)
+   */
+  @Override
+  public String toString() {
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream(1024);
+    describeTo(new PrintStream(bytes, true));
+    return bytes.toString();
+  }
+
+  /**
    * Configuration model builder defines the language for describing a configuration file sections and their content
    * parsing methods.
-   * 
+   *
    * @param <T> The type of the configuration bean.
    */
   public static final class ConfigModelBuilder<T> {
@@ -183,8 +218,8 @@ public final class ConfigModel<T> {
 
     /**
      * Creates a new instance of model builder for given configuration bean type.
-     * 
-     * @param type The class of the configuration bean (for creating an instance of it during parsing).
+     *
+     * @param type           The class of the configuration bean (for creating an instance of it during parsing).
      * @param valueConverter The value converter to use to convert <code>String</code> values to runtime types.
      */
     public ConfigModelBuilder(Class<T> type, ValueConverter valueConverter) {
@@ -203,8 +238,8 @@ public final class ConfigModel<T> {
      * <p>
      * A <code>ModelException</code> will be raised when there is a data conflict between the reader or writer, or the
      * writer cannot write to destination bean
-      * 
-     * @param name Section name. Must not be empty and already used.
+     *
+     * @param name   Section name. Must not be empty and already used.
      * @param reader Section reader instance.
      * @param writer Section writer instance.
      * @return This model builder.
@@ -219,7 +254,7 @@ public final class ConfigModel<T> {
 
     /**
      * Starts a new section description block with given section name.
-     * 
+     *
      * @param sectionName Section name. Must not be empty and already used.
      * @return A factory instance for choosing a reader for this section.
      */
@@ -230,7 +265,7 @@ public final class ConfigModel<T> {
 
     /**
      * Finalizes configuration model using the previously added sections.
-     * 
+     *
      * @return A new configuration model instance with defined sections.
      */
     public ConfigModel<T> ready() {
@@ -345,7 +380,7 @@ public final class ConfigModel<T> {
       private FactoryImpl<T> updateReader(SectionReader reader) {
         if (this.currentReader != null) {
           throw new RuntimeException("Cannot update reader when it's already set (in section ["
-              + this.currentReader + "]).");
+                  + this.currentReader + "]).");
         }
         this.currentReader = reader;
         return this;
@@ -385,7 +420,7 @@ public final class ConfigModel<T> {
 
     /**
      * Factory for defining common section readers. This factory is for convenience and is optional.
-     * 
+     *
      * @param <T> The type of the configuration bean.
      */
     public interface ReaderFactory<T> {
@@ -393,15 +428,14 @@ public final class ConfigModel<T> {
       /**
        * Defines that section data is a <code>String</code> value per line to be collected into
        * <code>java.util.List</code>.
-       * 
+       *
        * @return A factory instance for defining section writer.
        */
       ValueWriter<T> ofList();
 
       /**
-       * Defines that section data is a value (of given type) per line to be collected into
-       * <code>java.util.List</code>.
-       * 
+       * Defines that section data is a value (of given type) per line to be collected into <code>java.util.List</code>.
+       *
        * @param type The target runtime type for list values.
        * @return A factory instance for defining section writer.
        */
@@ -410,7 +444,7 @@ public final class ConfigModel<T> {
       /**
        * Defines that section data is a key-value pair (separated by equal-sign) per line to be collected into
        * <code>java.util.Map</code>. Both key and value are expected to be <code>String</code>s.
-       * 
+       *
        * @return A factory instance for defining section writer.
        */
       BeanWriter<T> ofMap();
@@ -419,7 +453,7 @@ public final class ConfigModel<T> {
        * Defines that section data is a key-value pair (separated by equal-sign) per line to be collected into
        * <code>java.util.Map</code>. The map key is expected to be <code>String</code>. The map value is expected to be
        * of <code>valueType</code>.
-       * 
+       *
        * @param valueType The target runtime type for map values.
        * @return A factory instance for defining section writer.
        */
@@ -429,8 +463,8 @@ public final class ConfigModel<T> {
        * Defines that section data is a key-value pair (separated by equal-sign) per line to be collected into
        * <code>java.util.Map</code>. The map key is expected to be of <code>keyType</code>. The map value is expected to
        * be of <code>valueType</code>.
-       * 
-       * @param keyType The target runtime type for map keys.
+       *
+       * @param keyType   The target runtime type for map keys.
        * @param valueType The target runtime type for map values.
        * @return A factory instance for defining section writer.
        */
@@ -440,7 +474,7 @@ public final class ConfigModel<T> {
     /**
      * Section writer factory contract to use when the section reader supports at least writing the gathered section
      * data to a configuration bean property.
-     * 
+     *
      * @param <T> The type of the configuration bean.
      */
     public interface ValueWriter<T> {
@@ -449,10 +483,10 @@ public final class ConfigModel<T> {
        * The value (containing data from configuration section) will be written to given bean property. When the section
        * is stored as <code>List</code> it may get converted to array (when required by the target property type).
        * However, for section data stored as <code>Map</code> the property must also accept a <code>Map</code>.
-       * 
+       *
        * @param propertyName The property name of the main configuration object.
        * @return Current configuration builder.
-      */
+       */
       ConfigModelBuilder<T> storeIn(String propertyName);
     }
 
@@ -460,7 +494,7 @@ public final class ConfigModel<T> {
      * Section writer factory contract to use when the section reader passes on a <code>Map</code> collection. This
      * enables writing the gathered section data to multiple properties of a configuration bean, or the property type
      * can be an object type that takes in the section data as constructor arguments.
-     * 
+     *
      * @param <T> The type of the configuration bean.
      */
     public interface BeanWriter<T> extends ValueWriter<T> {
@@ -476,7 +510,7 @@ public final class ConfigModel<T> {
        * <strong>Note: this kind of writing configuration settings only works when the Map contains keys and values as
        * String objects. The keys must be String to match with bean property names. The values must be String so that
        * value converter could convert them to target type, when necessary.</strong>
-       * 
+       *
        * @param propertyNames The property names (also the map keys) of the bean to write to. May be an empty array.
        * @return Current configuration builder.
        */
@@ -497,10 +531,10 @@ public final class ConfigModel<T> {
        * <strong>Note: this kind of writing configuration settings only works when the Map contains keys and values as
        * String objects. The keys must be String to match with parameter names. The values must be String so that value
        * converter could convert them to target type, when necessary.</strong>
-       * 
+       *
        * @param propertyName The property name of the main configuration object.
-       * @param paramNames The class constructor parameter names (also the map keys) for creating the value object for
-       * setting the property of the main configuration object. May be an empty array.
+       * @param paramNames   The class constructor parameter names (also the map keys) for creating the value object for
+       *                     setting the property of the main configuration object. May be an empty array.
        * @return Current configuration builder.
        */
       ConfigModelBuilder<T> storeInBeanOf(String propertyName, String... paramNames);

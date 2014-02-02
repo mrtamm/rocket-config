@@ -16,34 +16,34 @@
 
 package ws.rocket.config.test;
 
-import java.io.ByteArrayInputStream;
-import org.testng.annotations.Test;
-import ws.rocket.config.ConfigModel;
-
-import ws.rocket.config.ConfigException;
-import ws.rocket.config.Messages;
-
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertSame;
 
+import java.io.ByteArrayInputStream;
+import org.testng.annotations.Test;
+import ws.rocket.config.ConfigException;
+import ws.rocket.config.ConfigModel;
+import ws.rocket.config.Messages;
+
 /**
  * Tests the minimum: a configuration with no sections, both model construction and parsing.
- * 
+ *
  * @author Martti Tamm
  */
 public final class ConfigModelEmptyTest {
 
   /**
-   * Creates a configuration model with no sections. Afterwards parses an empty stream and verifies that an instance
-   * of configuration bean is created.
+   * Creates a configuration model with no sections. Afterwards parses an empty stream and verifies that an instance of
+   * configuration bean is created.
    */
   @Test
   public void testModel() {
     ConfigModel<Object> model = ConfigModel.expect(Object.class).ready();
     verifyModel(model);
     verifyParse(model);
+    verifyToString(model);
   }
 
   private void verifyModel(ConfigModel<Object> model) {
@@ -70,6 +70,10 @@ public final class ConfigModelEmptyTest {
       assertFalse(msgs.hasWarnings(), "No warnings expected (should be correct model).");
       assertFalse(msgs.hasErrors(), "No errors expected (should be correct model).");
     }
+  }
+
+  private void verifyToString(ConfigModel<Object> model) {
+    System.out.println(model.toString());
   }
 
 }

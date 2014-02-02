@@ -16,35 +16,35 @@
 
 package ws.rocket.config.test;
 
-import java.io.ByteArrayInputStream;
-import java.util.Map;
-import org.testng.annotations.Test;
-
-import ws.rocket.config.ConfigException;
-import ws.rocket.config.MapConfigModel;
-import ws.rocket.config.Messages;
-
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
+import java.util.Map;
+import org.testng.annotations.Test;
+import ws.rocket.config.ConfigException;
+import ws.rocket.config.MapConfigModel;
+import ws.rocket.config.Messages;
+
 /**
  * Tests the minimum: a configuration with no sections, both model construction and parsing.
- * 
+ *
  * @author Martti Tamm
  */
 public final class MapConfigModelEmptyTest {
 
   /**
-   * Creates a configuration model with no sections. Afterwards parses an empty stream and verifies that an instance
-   * of configuration bean is created.
+   * Creates a configuration model with no sections. Afterwards parses an empty stream and verifies that an instance of
+   * configuration bean is created.
    */
   @Test
   public void testModel() {
     MapConfigModel<Object> model = MapConfigModel.expect(Object.class);
     verifyModel(model);
     verifyParse(model);
+    verifyToString(model);
   }
 
   private void verifyModel(MapConfigModel<Object> model) {
@@ -67,6 +67,10 @@ public final class MapConfigModelEmptyTest {
       assertFalse(msgs.hasWarnings(), "No warnings expected (should be correct model).");
       assertFalse(msgs.hasErrors(), "No errors expected (should be correct model).");
     }
+  }
+
+  private void verifyToString(MapConfigModel<Object> model) {
+    System.out.println(model.toString());
   }
 
 }

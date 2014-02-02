@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Map;
 import ws.rocket.config.bean.BeanValidator;
 import ws.rocket.config.bean.BeanWriter;
+import ws.rocket.config.reader.StreamWriter;
 
 /**
  * An advanced section data writer that determines the property type, and creates an instance of it by calling the
@@ -64,6 +65,11 @@ public final class BeanConstructPropertyWriter implements SectionWriter {
   @SuppressWarnings({ "unchecked", "rawtypes" })
   public void write(BeanWriter<?> writer, Object values, Class<?> valueType) {
     writer.reconstruct(this.paramNames, (Map<String, String>) values);
+  }
+
+  @Override
+  public void describeTo(StreamWriter out, Class<?> collectionType, Class<?> valueType) {
+    out.nameValues(this.paramNames);
   }
 
 }

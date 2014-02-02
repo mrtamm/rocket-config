@@ -18,6 +18,7 @@ package ws.rocket.config.section.write;
 
 import ws.rocket.config.bean.BeanValidator;
 import ws.rocket.config.bean.BeanWriter;
+import ws.rocket.config.reader.StreamWriter;
 
 /**
  * A section writer determines how the data collected by section reader is to be written to target beam. It's the bridge
@@ -33,21 +34,31 @@ public interface SectionWriter {
   /**
    * Performs simple checks to verify that this writer accepts the collection and main value types from the reader, and
    * that the targeted properties are writable. When a problem is detected, it's recommended to throw a ModelException.
-   * 
+   *
    * @param collectionType The collection type used by the reader.
-   * @param mainValueType The main value type in the collection. For a map, it's the type of the map keys.
-   * @param validator A helper for validating the bean properties.
+   * @param mainValueType  The main value type in the collection. For a map, it's the type of the map keys.
+   * @param validator      A helper for validating the bean properties.
    */
   void validate(Class<?> collectionType, Class<?> mainValueType, BeanValidator validator);
 
   /**
    * Writes given values to target bean using given writer.
-   * 
-   * @param writer A helper for writing to the bean properties.
-   * @param values A collection with collected values.
+   *
+   * @param writer        A helper for writing to the bean properties.
+   * @param values        A collection with collected values.
    * @param mainValueType The main value type in the collection (it is used to determine array component type). For a
    *                      map, it's the type of the map keys (to check if they are Strings).
    */
   void write(BeanWriter<?> writer, Object values, Class<?> mainValueType);
+
+  /**
+   * Enables the section writer to describe the expected section data.
+   *
+   * @param out            An object where to write the information.
+   * @param collectionType The collection type used by the reader.
+   * @param valueType      The main value type in the collection (it is used to determine array component type). For a
+   *                       map, it's the type of the map keys (to check if they are Strings).
+   */
+  void describeTo(StreamWriter out, Class<?> collectionType, Class<?> valueType);
 
 }

@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Map;
 import ws.rocket.config.bean.BeanValidator;
 import ws.rocket.config.bean.BeanWriter;
+import ws.rocket.config.reader.StreamWriter;
 
 /**
  * A section data writer that writes each value to corresponding property of target bean. This writer supports only
@@ -35,7 +36,7 @@ public final class MultiPropertyWriter implements SectionWriter {
   /**
    * Creates a new multi-property writer. When property names are not defined, all the properties are attempted to write
    * to for which there exists a map key with non-null value.
-   * 
+   *
    * @param propertyNames Optional array of property names defining writable properties.
    */
   public MultiPropertyWriter(String... propertyNames) {
@@ -70,6 +71,11 @@ public final class MultiPropertyWriter implements SectionWriter {
         }
       }
     }
+  }
+
+  @Override
+  public void describeTo(StreamWriter out, Class<?> collectionType, Class<?> valueType) {
+    out.nameValues(this.propertyNames);
   }
 
 }

@@ -16,13 +16,17 @@
 
 package ws.rocket.config.test;
 
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
+
 import java.util.List;
+import org.testng.annotations.Test;
+import ws.rocket.config.ConfigException;
 import ws.rocket.config.ConfigModel;
 import ws.rocket.config.Messages;
 import ws.rocket.config.test.data.ConfigTestModel;
-
-import org.testng.annotations.Test;
-import ws.rocket.config.ConfigException;
 import ws.rocket.config.test.data.filter.Phase1Filter;
 import ws.rocket.config.test.data.filter.Phase2Filter;
 import ws.rocket.config.test.data.filter.TestFilter;
@@ -30,15 +34,10 @@ import ws.rocket.config.test.data.handler.Phase1Handler;
 import ws.rocket.config.test.data.handler.Phase2Handler;
 import ws.rocket.config.test.data.handler.TestHandler;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
-
 /**
  * Tests all the features to verify that they work when model is correct and configuration file conforms. This test
  * relies on external configuration file <em>/config-test.conf</em>.
- * 
+ *
  * @author Martti Tamm
  */
 public final class ConfigModelParseTest {
@@ -49,12 +48,14 @@ public final class ConfigModelParseTest {
   @Test
   public void testModelParse() {
     final ConfigModel<ConfigTestModel> model = ConfigModel.expect(ConfigTestModel.class)
-        .section("main").ofMap().storeInBeanProps()
-        .section("read-only").ofMap().storeInBeanOf("readOnly", "code", "text", "enabled")
-        .section("handlers").ofMap(TestHandler.class).storeIn("handlers")
-        .section("filters").ofList(TestFilter.class).storeIn("interceptors")
-        .section("filters-array").ofList(TestFilter.class).storeIn("interceptorsArray")
-        .ready();
+            .section("main").ofMap().storeInBeanProps()
+            .section("read-only").ofMap().storeInBeanOf("readOnly", "code", "text", "enabled")
+            .section("handlers").ofMap(TestHandler.class).storeIn("handlers")
+            .section("filters").ofList(TestFilter.class).storeIn("interceptors")
+            .section("filters-array").ofList(TestFilter.class).storeIn("interceptorsArray")
+            .ready();
+
+    verifyToString(model);
 
     try {
       ConfigTestModel config = model.parse(ConfigTestModel.class.getResourceAsStream("/config-test.conf"));
@@ -74,6 +75,10 @@ public final class ConfigModelParseTest {
       assertFalse(msgs.hasErrors(), "No errors expected (should be correct model).");
     }
 
+  }
+
+  private void verifyToString(ConfigModel<ConfigTestModel> model) {
+    System.out.println(model.toString());
   }
 
   private void validateGeneralSection(ConfigTestModel config) {

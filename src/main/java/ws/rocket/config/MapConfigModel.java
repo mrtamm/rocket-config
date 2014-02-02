@@ -16,12 +16,15 @@
 
 package ws.rocket.config;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
 import ws.rocket.config.bean.BeanContext;
 import ws.rocket.config.reader.ReaderContext;
+import ws.rocket.config.reader.StreamWriter;
 import ws.rocket.config.section.Section;
 import ws.rocket.config.section.read.ValueMapSection;
 import ws.rocket.config.section.value.DefaultConverter;
@@ -32,21 +35,21 @@ import ws.rocket.config.section.write.BeanConstructPropertyWriter;
  * A configuration model that has only one section (type) but can parse a file with multiple section, excepting them all
  * to have same section format. This model, when parsed, returns an unordered map, where read section names are stored
  * as map keys, and section data is stored as a map value (per map key) in an instance of the target bean type.
- * 
+ *
  * @param <T> The target type that will hold the read configuration of each section.
- * 
+ *
  * @author Martti Tamm
  */
 public final class MapConfigModel<T> {
 
   /**
    * The factory method for constructing a new map-based model for given configuration bean type. The returned
-   * configuration model allows unlimited amount of sections where section name is used as map key, and the section
-   * data is used to create a new instance of configuration bean (per section).
+   * configuration model allows unlimited amount of sections where section name is used as map key, and the section data
+   * is used to create a new instance of configuration bean (per section).
    *
-   * @param <T> The type of the configuration bean.
+   * @param <T>              The type of the configuration bean.
    * @param confInstanceType The type of the configuration bean.
-   * @param propNames Optional array of allowed property names. When empty, all properties are attempted.
+   * @param propNames        Optional array of allowed property names. When empty, all properties are attempted.
    * @return The created configuration model.
    */
   public static <T> MapConfigModel<T> expect(Class<T> confInstanceType, String... propNames) {
@@ -55,17 +58,17 @@ public final class MapConfigModel<T> {
 
   /**
    * The factory method for constructing a new map-based model for given configuration bean type. The returned
-   * configuration model allows unlimited amount of sections where section name is used as map key, and the section
-   * data is used to create a new instance of configuration bean (per section).
+   * configuration model allows unlimited amount of sections where section name is used as map key, and the section data
+   * is used to create a new instance of configuration bean (per section).
    *
-   * @param <T> The type of the configuration bean.
+   * @param <T>              The type of the configuration bean.
    * @param confInstanceType The type of the configuration bean.
-   * @param converter A custom value converter to use for <code>String</code> to runtime type value conversions.
-   * @param propNames Optional array of allowed property names. When empty, all properties are attempted.
+   * @param converter        A custom value converter to use for <code>String</code> to runtime type value conversions.
+   * @param propNames        Optional array of allowed property names. When empty, all properties are attempted.
    * @return The created configuration model.
    */
   public static <T> MapConfigModel<T> expect(Class<T> confInstanceType, ValueConverter converter,
-      String... propNames) {
+          String... propNames) {
     if (confInstanceType == null) {
       throw new NullPointerException("Given configuration bean type is a null reference");
     } else if (converter == null) {
@@ -92,7 +95,7 @@ public final class MapConfigModel<T> {
 
   /**
    * Informative method: provides the bean type that will be returned after conversion.
-   * 
+   *
    * @return Configuration bean type.
    */
   public Class<T> getConfigBeanType() {
@@ -115,7 +118,7 @@ public final class MapConfigModel<T> {
    * to writer) or all (otherwise) properties of the bean.
    * <p>
    * Failing to initialize bean or failing to set a declared property will raise ConfigException.
-   * 
+   *
    * @param input Configuration stream. When null then ConfigException will be raised.
    * @return A new instance of configuration object with data set as defined in the stream.
    * @throws ConfigException Contains error and possibly also warning messages from parsing the stream.
@@ -151,6 +154,36 @@ public final class MapConfigModel<T> {
 
     ctx.checkErrors();
     return result;
+  }
+
+  /**
+   * Provides textual representation of the current model setup and writes it to the provided stream.
+   * <p>
+   * Applications might use this to enlist what settings are available and how a configuration file should look like.
+   * The output of this method should not be considered as valid setup, nor is it guaranteed to be always syntactically
+   * correct.
+   *
+   * @param out The stream where to write.
+   * @see #toString()
+   */
+  public void describeTo(PrintStream out) {
+    StreamWriter writer = StreamWriter.init(out, this.getConfigBeanType());
+    this.section.describeTo(writer);
+  }
+
+  /**
+   * Provides textual representation of the current model setup and returns it as string.
+   * <p>
+   * {@inheritDoc}
+   *
+   * @return Textual representation of model setup.
+   * @see #describeTo(java.io.PrintStream)
+   */
+  @Override
+  public String toString() {
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream(1024);
+    describeTo(new PrintStream(bytes, true));
+    return bytes.toString();
   }
 
   private static void validatePropName(String... propNames) {
