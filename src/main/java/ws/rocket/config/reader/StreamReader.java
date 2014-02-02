@@ -45,7 +45,7 @@ public final class StreamReader {
 
   /**
    * Creates a new instance of stream that parses the given input stream. The given stream must not be null.
-   * 
+   *
    * @param input The stream to parse.
    */
   public StreamReader(InputStream input) {
@@ -56,10 +56,11 @@ public final class StreamReader {
   }
 
   /**
-   * Attempts to read next non-blank line. When data is found, white-space around the returned line is guaranteed to be
-   * removed. When no more lines are found, <code>null</code> will be returned (even if called multiple times).
-   * 
-   * @return The read line (non-blank) or <code>null</code>.
+   * Attempts to read next line. The line will be returned as-is, except that a comment, when present, will be removed
+   * together with comment symbol. Also line breaks won't be included in return values. When no more lines are found,
+   * <code>null</code> will be returned (even if called multiple times).
+   *
+   * @return The read line or <code>null</code>.
    * @throws IOException When the underlying stream reports problems.
    */
   public String readLine() throws IOException {
@@ -68,27 +69,50 @@ public final class StreamReader {
     }
 
     this.line++;
+
     boolean comment = false;
+    boolean escapeCharBefore = false;
     int nextChar = this.input.read();
 
     // Repeat reading a line until the end of line or end of file.
     // Comments will be skipped.
     while (nextChar != '\n' && nextChar != -1) {
-      if (nextChar == '#') {
-        comment = true;
-      } else if (nextChar == -1) {
+
+      if (nextChar == -1) {
         this.input.close();
         break;
-      } else if (!comment && nextChar != '\r') {
+
+      } else if (Character.getType(nextChar) == Character.LINE_SEPARATOR) {
+        if (nextChar != '\r') {
+          break;
+        }
+
+      } else if (comment) {
+        comment = true; // Do nothing; shields from the rest.
+
+      } else if (nextChar == '#') {
+        if (escapeCharBefore) {
+          this.buffer.setLength(this.buffer.length() - 1);
+          this.buffer.appendCodePoint(nextChar);
+        } else {
+          comment = true;
+        }
+
+      } else {
         this.buffer.appendCodePoint(nextChar);
       }
 
+      escapeCharBefore = nextChar == '\\';
       nextChar = this.input.read();
     }
 
     this.endOfStream = nextChar == -1;
 
-    String result = this.endOfStream && this.buffer.length() == 0 ? null : this.buffer.toString();
+    String result = null;
+    if (!this.endOfStream || this.buffer.length() > 0) {
+      result = this.buffer.toString();
+    }
+
     this.buffer.setLength(0);
     return result;
   }
@@ -96,7 +120,7 @@ public final class StreamReader {
   /**
    * Provides the line number of the last returned line. When nothing is read yet, zero is returned. In case of empty
    * file, the line number after reading is one.
-   * 
+   *
    * @return The line number of last returned line.
    */
   public int getLineNumber() {
@@ -106,7 +130,7 @@ public final class StreamReader {
   /**
    * Reports whether the underlying stream is known to be consumed or not. This method does not have any effect on the
    * stream.
-   * 
+   *
    * @return A Boolean that is <code>true</code> when stream is consumed.
    */
   public boolean isEndOfStream() {
