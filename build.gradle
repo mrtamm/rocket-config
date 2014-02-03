@@ -27,7 +27,7 @@ test {
 
 jar {
   manifest {
-    attributes 'Implementation-Title': project.description, 'Implementation-Version': project.version
+    attributes 'Implementation-Title': 'Rocket-Config', 'Implementation-Version': project.version
   }
 }
 
